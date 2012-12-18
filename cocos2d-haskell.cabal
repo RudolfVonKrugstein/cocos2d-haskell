@@ -1,0 +1,17 @@
+name:           cocos2d-haskell
+version:        0.1
+cabal-version:  >= 1.2
+build-type:     Simple
+author:         nhuesken
+
+library
+  hs-source-dirs:  src
+  build-depends:   base >= 4
+  ghc-options:     -Wall
+
+executable cocos2d-haskell
+  hs-source-dirs:  src
+  main-is:         Main.hs
+  build-depends:   base >= 4
+  ghc-options:     -Wall
+
