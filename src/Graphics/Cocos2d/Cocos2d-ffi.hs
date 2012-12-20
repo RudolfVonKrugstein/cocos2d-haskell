@@ -82,7 +82,7 @@ class NodeDerived a where
   setRotation a = nodeSetRotation (toNode a)
   
   runAction :: a -> Action -> IO ()
-  runAction n a = (toNode n) (toJSAction a)
+  runAction n a = nodeRunAction (toNode n) (toJSAction a)
 
 foreign import jscall "%1.addChild(%2)" nodeAddChild :: Node -> Node -> IO ()
 foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
@@ -90,6 +90,19 @@ foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> I
 foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
+
+-- instances
+instance NodeDerived MenuItem where
+  toNode = menuItemToNode
+foreign import jscall "%1" menuItemToNode :: MenuItem -> Node
+
+instance NodeDerived Menu where
+  toNode = menuToNode
+foreign import jscall "%1" menuToNode :: Menu -> Node
+
+instance NodeDerived Sprite where
+  toNode = spriteToNode
+foreign import jscall "%1" spriteToNode :: Sprite -> Node
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
 createMenuWithItems :: [MenuItem] -> IO Menu
@@ -108,7 +121,7 @@ data JSActionType
 type JSAction = Ptr JSActionType
 
 toJSAction :: Action -> JSAction
-toJSAction (Sequence a:as)   = sequenceAction (toJSAction a) (toJSAction $ Sequence as)
+toJSAction (Sequence (a:b:as))   = sequenceAction (toJSAction a) (toJSAction $ Sequence (b:as))
 toJSAction (Sequence [a])    = toJSAction a
 toJSAction (RotateTo t r)    = rotateToAction t r
 toJSAction (ScaleTo t (x,y)) = scaleToAction t x y
