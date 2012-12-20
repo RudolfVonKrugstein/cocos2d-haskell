@@ -1,5 +1,7 @@
 module Main where
 
+import Cocos2d
+
 main = cocos2dApp $ \app -> do
   director <- getDirectorInstance
   -- display FPS

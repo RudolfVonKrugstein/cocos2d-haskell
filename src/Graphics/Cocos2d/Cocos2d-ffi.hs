@@ -1,15 +1,31 @@
 module Cocos2d where
 
-type App = JSAny
-type Director = JSAny
-type Scene = JSAny
-type Layer = JSAny
-type Size = JSAny
-type Point = JSAny
-type Menuitem = JSAny
-type Menu = JSAny
-type Sprite = JSAny
-type TTFLabel = JSAny
+import Haste
+import Haste.Prim
+import Data.Functor
+
+data AppType
+type App = Ptr AppType
+data DirectorType
+type Director = Ptr DirectorType
+data SceneType
+type Scene = Ptr SceneType
+data LayerType
+type Layer = Ptr LayerType
+data SizeType
+type Size = Ptr SizeType
+data PointType
+type Point = Ptr PointType
+data MenuItemType
+type MenuItem = Ptr MenuItemType
+data MenuType
+type Menu = Ptr MenuType
+data SpriteType
+type Sprite = Ptr SpriteType
+data TTFLabelType
+type TTFLabel = Ptr TTFLabelType
+data NodeType
+type Node = Ptr NodeType
 
 -- Start cococs2d app
 foreign import jscall "myApp = cocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
@@ -46,31 +62,34 @@ foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,NULL)" createMenuItemIma
 
 foreign import jscall "history.go(-1)" quit :: IO ()
 
--- type class to controll what can be addes as child
-class AddChild a b
-instance AddChild Scene Layer
-instance AddChild Menu MenuItem
-instance AddChild Layer TTFLabel
+-- type class to controll classes derived von CCNode
+class NodeDerived a where
+  toNode :: a -> Node
 
-foreign import jscall "%1.addChild(%2)" addChild :: (AddChild a b) => a -> b -> IO ()
+  addChild :: (NodeDerived b) => a -> b -> IO ()
+  addChild a b = nodeAddChild (toNode a) (toNode b)
 
--- type class for everything that can be transformed
-class Tranformable a
-instance Transformable MenuItem
-instance Transformable Menu
-instance Transformable Sprite
-instance Transformable TTFLabel
+  setAnchorPoint :: a -> (Double,Double) -> IO ()
+  setAnchorPoint a p = nodeSetAnchorPoint (toNode a) (tupleToPoint p)
 
-foreign import jscall "%1.setAnchorPoint(%2)" setAnchorPointJS :: (Tranformable a) => a -> Point -> IO ()
-setAnchorPoint :: (Tranformable a) => a -> (Double,Double) -> IO ()
-setAnchorPoint t p = setAnchorPointJS t (tupleToPoint p)
+  setPosition :: a -> (Double,Double) -> IO ()
+  setPosition a p = nodeSetPosition (toNode a) (tupleToPoint p)
 
-foreign import jscall "%1.setPosition(%2)" setPositionJS :: (Tranformable a) => a -> Point -> IO ()
-setPosition :: (Tranformable a) => a -> (Double,Double) -> IO ()
-setPosition t p = setPositionJS t (tupleToPoint p)
+  setScale :: a -> Double -> IO ()
+  setScale a = nodeSetScale (toNode a)
+  
+  setRotation :: a -> Double -> IO ()
+  setRotation a = nodeSetRotation (toNode a)
+  
+  runAction :: a -> Action -> IO ()
+  runAction n a = (toNode n) (toJSAction a)
 
-foreign import jscall "%1.setScale(%2)" setScale :: (Transformable a) => a -> Double -> IO ()
-foreign import jscall "%1.setRotation(%2)" setRotation :: (Transformable a) => a -> Double -> IO ()
+foreign import jscall "%1.addChild(%2)" nodeAddChild :: Node -> Node -> IO ()
+foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
+foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> IO ()
+foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
+foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
+foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
 createMenuWithItems :: [MenuItem] -> IO Menu
@@ -85,7 +104,8 @@ foreign import jscall "cc.Sprite.create(%1)" createSprite :: String -> IO Sprite
 
 -- Actions
 data Action = Sequence [Action] | RotateTo Double Double | ScaleTo Double (Double,Double) | MoveBy Double (Double,Double)
-data JSAction = JSAny
+data JSActionType
+type JSAction = Ptr JSActionType
 
 toJSAction :: Action -> JSAction
 toJSAction (Sequence a:as)   = sequenceAction (toJSAction a) (toJSAction $ Sequence as)
@@ -99,6 +119,3 @@ foreign import jscall "cc.RotateTo(%1,%2)" rotateToAction :: Double -> Double ->
 foreign import jscall "cc.ScaleTo(%1,%2,%3)" scaleToAction :: Double -> Double -> Double -> JSAction
 foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> JSAction
 
-foreign import "%1.runAction(%2)" runActionJS :: (Transformable a) => a -> JSAction -> IO ()
-runAction :: (Transformable a) => a -> Action -> IO ()
-runAction t a = runActionJS t (toJSAction a)
