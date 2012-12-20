@@ -48,9 +48,17 @@ foreign import jscall "%1.height" sizeHeight :: Size -> Double
 sizeToTuple :: Size -> (Double,Double)
 sizeToTuple s = (sizeWidth s, sizeHeight s)
 
+foreign import jscall "%1.x" pointX :: Point -> Double
+foreign import jscall "%1.z" pointY :: Point -> Double
 foreign import jscall "cc.p(%1,%2)" point :: Double -> Double -> Point
 tupleToPoint :: (Double,Double) -> Point
 tupleToPoint t = point (fst t) (snd t)
+pointToTuple :: Point -> (Double,Double)
+pointToTuple p = (pointX p, pointY p)
+
+foreign import jscall "cc.PointZero()" pointZeroJS :: IO Point
+pointZero :: IO (Double,Double)
+pointZero = pointToTuple <$> pointZeroJS
 
 
 foreign import jscall "cc.Director.getInstance().getWinSize()" getWinSizeJS :: IO Size
@@ -103,6 +111,18 @@ foreign import jscall "%1" menuToNode :: Menu -> Node
 instance NodeDerived Sprite where
   toNode = spriteToNode
 foreign import jscall "%1" spriteToNode :: Sprite -> Node
+
+instance NodeDerived Layer where
+  toNode = layerToNode
+foreign import jscall "%1" layerToNode :: Layer -> Node
+
+instance NodeDerived TTFLabel where
+  toNode = ttflabelToNode
+foreign import jscall "%1" ttflabelToNode :: TTFLabel -> Node
+
+instance NodeDerived Scene where
+  toNode = sceneToNode
+foreign import jscall "%1" sceneToNode :: Scene -> Node
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
 createMenuWithItems :: [MenuItem] -> IO Menu
