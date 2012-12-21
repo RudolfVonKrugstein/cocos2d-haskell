@@ -25,6 +25,6 @@ var cocos2dApp = cc.Application.extend({
 });
 
 var myApp = 0;
-function cocos2dApp(start) {
-	myApp = cocos2dApp(start)
+function startCocos2dApp(start) {
+	myApp = new cocos2dApp(start)
 };
