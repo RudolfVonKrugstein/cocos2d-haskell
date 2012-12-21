@@ -28,7 +28,7 @@ data NodeType
 type Node = Ptr NodeType
 
 -- Start cococs2d app
-foreign import jscall "myApp = cocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
+foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
 
 foreign import jscall "cc.Director.getInstance()" getDirectorInstance :: IO Director
 
@@ -66,7 +66,7 @@ foreign import jscall "cc.Director.getInstance().getWinSize()" getWinSizeJS :: I
 getWinSize :: IO (Double,Double)
 getWinSize = sizeToTuple <$> getWinSizeJS
 
-foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,NULL)" createMenuItemImage :: String -> String -> IO () -> IO MenuItem
+foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItem
 
 foreign import jscall "history.go(-1)" quit :: IO ()
 
@@ -90,7 +90,7 @@ class NodeDerived a where
   setRotation a = nodeSetRotation (toNode a)
   
   runAction :: a -> Action -> IO ()
-  runAction n a = nodeRunAction (toNode n) (toJSAction a)
+  runAction n a = nodeRunAction (toNode n) $! (toJSAction a)
 
 foreign import jscall "%1.addChild(%2)" nodeAddChild :: Node -> Node -> IO ()
 foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
@@ -136,11 +136,14 @@ foreign import jscall "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String ->
 foreign import jscall "cc.Sprite.create(%1)" createSprite :: String -> IO Sprite
 
 -- Actions
-data Action = Sequence [Action] | RotateTo Double Double | ScaleTo Double (Double,Double) | MoveBy Double (Double,Double)
+data Action = Sequence [Action] | RotateTo Double Double | ScaleTo Double (Double,Double) | MoveBy Double (Double,Double) deriving (Show)
 data JSActionType
 type JSAction = Ptr JSActionType
 
 toJSAction :: Action -> JSAction
+{-toJSAction a = unsafePerformIO $ do
+  alert (show a)
+  return -}
 toJSAction (Sequence (a:b:as))   = sequenceAction (toJSAction a) (toJSAction $ Sequence (b:as))
 toJSAction (Sequence [a])    = toJSAction a
 toJSAction (RotateTo t r)    = rotateToAction t r
@@ -148,7 +151,7 @@ toJSAction (ScaleTo t (x,y)) = scaleToAction t x y
 toJSAction (MoveBy t (x,y))  = moveByAction t x y
 
 foreign import jscall "cc.Sequence.create(%1,%2)" sequenceAction :: JSAction -> JSAction -> JSAction
-foreign import jscall "cc.RotateTo(%1,%2)" rotateToAction :: Double -> Double -> JSAction
-foreign import jscall "cc.ScaleTo(%1,%2,%3)" scaleToAction :: Double -> Double -> Double -> JSAction
+foreign import jscall "cc.RotateTo.create(%1,%2)" rotateToAction :: Double -> Double -> JSAction
+foreign import jscall "cc.ScaleTo.create(%1,%2,%3)" scaleToAction :: Double -> Double -> Double -> JSAction
 foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> JSAction
 
