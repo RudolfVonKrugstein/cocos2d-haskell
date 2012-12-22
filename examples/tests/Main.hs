@@ -39,11 +39,30 @@ mainMenuScene = do
   itemMenu = createMenu items
   addChild_ l menu
 
-  yPos <- newIORef 0
+  setTouchesMoved s (onTouchesMoved menu)
+  setMouseDragged s (onMouseDragged menu)
+  setScrollWheel  s (onScrollWheel menu)
 
-  setTouchesMoved s (onTouchesMoved yPos menu)
-  setMouseDragged s (onMouseDragged yPos menu)
-  setScrollWheel  s (onScrollWheel yPos menu)
+-- callbacks
+onTouchesMoved :: Menu -> [Touch] -> IO ()
+onTouchesMoved menu (t:_) = do
+  let (_,y) = delta t
+  moveMenu menu y
+
+onMouseDragged :: Menu -> (Double,Double) -> IO ()
+onMouseDragged menu (_,y) = moveMenu menu y
+
+onScrollWheel :: Menu -> Double -> IO ()
+onScrollWheel menu delta = moveMenu menu delta
+
+
+-- move the menu
+moveMenu :: Menu -> Double -> IO ()
+moveMenu menu delta = do
+  (_,y) <- getPosition menu
+  let newY = min ((fromIntegral (length tests)) * LINE_SPACE) $ max 0.0 (y+delta)
+  writeIORef yPos newY
+  setPosition menu (0,newY)
 
 data Test = Test {
                   title     :: String,
@@ -51,7 +70,7 @@ data Test = Test {
                  }
 
 tests :: [Test]
-tests = [
+	tests = [
   Test "ActionManager Test"   actionManagerTestScene,
   Test "Action Test"          actionTestScene,
   Test "Box2D Test"           box2DTestScene,
