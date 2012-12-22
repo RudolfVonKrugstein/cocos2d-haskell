@@ -21,11 +21,27 @@ goToMainMenu = do
 mainMenuScene :: IO Scene
 mainMenuScene = do
   s <- createScene
-  l <- layerGradient        
+  l <- layerGradient (Color4B 0 0 0 255) (Color4B 0x46 0x82 0xB4 255)
+
+  (winWidth, winHeight) <- getWinSize
+  
+  closeItem <- createMenuItemImage s_pathClose s_pathClose quit
+  menu <- createMenu [closeItem]
+  setPosition menu (0.0, 0.0)
+  setPosition closeItem (winWIdth - 30.0, winHeight -30.0)
+  addChild l menu 1
+  
+  items <- mapM (\(t,i) -> do label <- createLabelTTF (title t) "Arial" 24
+                              menuItem <- createMenuItemLabel label (test t)
+                              setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * LINE_SPACE
+                ) $ zip tests [0.0..]
+  
+  itemMenu = createMenu items
+  addChild_ l menu
 
 data Test = Test {
                   title     :: String,
-                  testScene :: IO Scene
+                  testScene :: IO ()
                  }
 
 tests :: [Test]
