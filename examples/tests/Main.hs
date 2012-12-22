@@ -39,6 +39,12 @@ mainMenuScene = do
   itemMenu = createMenu items
   addChild_ l menu
 
+  yPos <- newIORef 0
+
+  setTouchesMoved s (onTouchesMoved yPos menu)
+  setMouseDragged s (onMouseDragged yPos menu)
+  setScrollWheel  s (onScrollWheel yPos menu)
+
 data Test = Test {
                   title     :: String,
                   testScene :: IO ()
