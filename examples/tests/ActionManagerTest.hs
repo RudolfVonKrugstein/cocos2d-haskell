@@ -3,6 +3,10 @@ module ActionManagerTest where
 import Cocos2d
 import Resources
 
+-- some constants
+tag_GROSSINI = 5561
+tag_SEQUENCE = 5562
+
 data ActionManagerTest = AMT { prev :: ActionManagerTest,
                                this :: IO Scene,
                                next :: ActionManagerTest,
@@ -59,7 +63,7 @@ crashTestScene = do
 removeScene :: Scene -> IO ()
 removeScene scene = do
   removeChild (getParent scene) scene
-  onNextCallback this 
+  startSceneFromActionManagerTest (next crashTest)
 
 ------------------------------------------------------------------
 -- Test2
@@ -105,7 +109,7 @@ pauseTestScene = do
   -- Also, this test MUST be done, after [super onEnter]
   -- Also probably problematic in haskell
   grossini <- createSprite s_pathGrossini
-  setTag grossini TAG_GROSSINI
+  setTag grossini tag_GROSSINI
   addChild scene grossini 0
 
   schedule scene (onUnpause scene) 3
@@ -115,7 +119,7 @@ pauseTestScene = do
 onUnpause :: Scene -> IO ()
 onUnpause scene = do
   unschedule scene onUnpause 
-  node <- getChildByTag scene TAG_GROSSINI
+  node <- getChildByTag scene tag_GROSSINI
   resumeTarget node
 
 ------------------------------------------------------------------
@@ -136,17 +140,17 @@ removeTestScene = do
 
   child <- createSprite s_pathGrossini
   setPosition child (200.0, 200.0)
-  setTag child TAG_GROSSINI
+  setTag child tag_GROSSINI
 
   addChild scene scene 1
-  runAction child (TagAction TAG_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc stopAction scene])
+  runAction child (TagAction tag_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc stopAction scene])
 
   return scene
 
 stopAction :: Scene -> IO ()
 stopAction scene = do
-  sprite <- getChildByTag scene TAG_GROSSINI
-  stopActionByTag sprite TAG_SEQUENCE
+  sprite <- getChildByTag scene tag_GROSSINI
+  stopActionByTag sprite tag_SEQUENCE
 
 ------------------------------------------------------------------
 -- ResumeTest
@@ -164,7 +168,7 @@ resumeTestScene = do
   setPosition l (winWidth/2.0, 245.0)
 
   grossini <- createSprite s_pathGrossini
-  setTag grossini TAG_GROSSINI
+  setTag grossini tag_GROSSINI
 
   addChild scene grossini 0
   setPosition grossini (winWidth/2.0, winHeight/2.0)
@@ -181,6 +185,6 @@ resumeTestScene = do
 resumeGrossini :: Scene -> IO ()
 resuimeGrossini scene = do
   unschedule scene resumeGrossini
-  grossini <- getChildByTag scene TAG_GROSSINI
+  grossini <- getChildByTag scene tag_GROSSINI
   resumeTarget grossini
 

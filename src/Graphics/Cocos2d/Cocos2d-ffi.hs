@@ -76,8 +76,23 @@ foreign import jscall "history.go(-1)" quit :: IO ()
 class NodeDerived a where
   toNode :: a -> Node
 
-  addChild :: (NodeDerived b) => a -> b -> IO ()
-  addChild a b = nodeAddChild (toNode a) (toNode b)
+  addChild :: (NodeDerived b) => a -> b -> Int -> IO ()
+  addChild a b id = nodeAddChild (toNode a) (toNode b) id
+
+  addChild_ :: (NodeDerived b) => a -> b -> IO ()
+  addChild_ a b = nodeAddChild_ (toNode a) (toNode b)
+
+  setTag :: a -> Int -> IO ()
+  setTag a = nodeSetTag (toNode a)
+
+  getChildByTag :: a -> Int -> IO Node
+  getChildByTag a id = nodeGetChildByTag (toNode a) id
+
+  getParent :: a -> IO Node
+  getParent a = nodeGetParent (toNode a)
+
+  removeChild :: (NodeDerived b) => a -> b -> IO ()
+  removeChild a b = nodeRemoveChild (toNode a) (toNode b)
 
   setAnchorPoint :: a -> (Double,Double) -> IO ()
   setAnchorPoint a p = nodeSetAnchorPoint (toNode a) (tupleToPoint p)
@@ -97,14 +112,28 @@ class NodeDerived a where
   runAction :: a -> Action -> IO ()
   runAction n a = nodeRunAction (toNode n) $! (toJSAction a)
 
-foreign import jscall "%1.addChild(%2)" nodeAddChild :: Node -> Node -> IO ()
+  stopAllActions :: a -> IO ()
+  stopAllActions a = nodeStopAllActions (toNode a)
+
+  scheduleInterval :: a -> IO () -> Double -> IO ()
+  scheduleInterval a i = nodeScheduleInterval (toNode a) i
+
+foreign import jscall "%1.addChild(%2,%3)" nodeAddChild :: Node -> Node -> Int -> IO ()
+foreign import jscall "%1.addChild(%2)" nodeAddChild_ :: Node -> Node -> IO ()
+foreign import jscall "%1.removeChild(%2)" nodeRemoveChild :: Node -> Node -> IO ()
+foreign import jscall "%1.setTag(%2)" nodeSetTag :: Node -> Int -> IO ()
+foreign import jscall "%1.getChildByTag(%2)" nodeGetChildByTag :: Node -> Int -> IO Node
+foreign import jscall "%1.getParent()" nodeGetParent :: Node -> IO Node
 foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
 foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> IO ()
 foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
+foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
+foreign import jscall "%1.schedule(funtion (a) {A(%1, [[1,a],0]);},%2)" scheduleInterval :: Node -> Double -> IO ()
 
+foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> JSAction
 -- instances
 instance NodeDerived MenuItem where
   toNode = menuItemToNode
@@ -134,7 +163,7 @@ foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
 createMenuWithItems :: [MenuItem] -> IO Menu
 createMenuWithItems items = do
   m <- createMenu
-  mapM_ (addChild m) items
+  mapM_ (addChild_ m) items
   return m
 
 foreign import jscall "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String -> String -> Int -> IO TTFLabel
@@ -153,7 +182,7 @@ data Action = Sequence [Action]
             | FadeIn Double
             | FadeOut Double
             | CallFunc (IO ())
-              deriving (Show)
+
 data JSActionType
 type JSAction = Ptr JSActionType
 
@@ -183,5 +212,5 @@ foreign import jscall "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double 
 foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> JSAction
 foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> JSAction
 foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> JSAction
-foriegn import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> JSAction
+foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> JSAction
 foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> JSAction
