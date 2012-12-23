@@ -57,154 +57,127 @@ removeScene :: Scene -> IO ()
 removeScene scene = do
   removeChild (getParent scene) scene
   onNextCallback this 
+
+------------------------------------------------------------------
+-- Test2
+------------------------------------------------------------------
+logicTest :: ActionManagerTest
+logicTest = AMT crashTest logicTestScene pauseTest "Logic Test"
+
+logicTestScene :: IO Scene
+logicTestScene = do
+  scene <- createScene
+
+  grossini <- createSprite s_pathGrossini  
   
+  setTag grossini 2
+  addChild scene grossini 0
 
+  setPosition grossini (200.0, 200.0)
 
-//------------------------------------------------------------------
-//
-// Test2
-//
-//------------------------------------------------------------------
-var LogicTest = ActionManagerTest.extend({
-    title:function () {
-        return "Logic test";
-    },
-    onEnter:function () {
-        this._super();
+  runAction (Sequence [MoveBy 1.0 (150.0,0.0), CallFunc $ onBugMe grossini]
+  return scene
 
-        var grossini = cc.Sprite.create(s_pathGrossini);
-        this.addChild(grossini, 0, 2);
-        grossini.setPosition(200, 200);
+onBugMe :: Sprite -> IO ()
+onBugMe sprite = do
+  stopAllActions sprite
+  runAction sprite (ScaleTo 2.0 2.0)
 
-        grossini.runAction(cc.Sequence.create(
-            cc.MoveBy.create(1, cc.p(150, 0)),
-            cc.CallFunc.create(this.onBugMe, this))
-        );
-    },
-    onBugMe:function (node) {
-        node.stopAllActions(); //After this stop next action not working, if remove this stop everything is working
-        node.runAction(cc.ScaleTo.create(2, 2));
-    }
-});
+------------------------------------------------------------------
+-- PauseTest
+------------------------------------------------------------------
+pauseTest :: ActionManagerTest
+pauseTest = AMT logicTest pauseTestScene removeTest "Pause Test"
 
-//------------------------------------------------------------------
-//
-// PauseTest
-//
-//------------------------------------------------------------------
-var PauseTest = ActionManagerTest.extend({
-    title:function () {
-        return "Pause Test";
-    },
-    onEnter:function () {
-        //
-        // This test MUST be done in 'onEnter' and not on 'init'
-        // otherwise the paused action will be resumed at 'onEnter' time
-        //
-        this._super();
+pauseTestScene :: IO Scene
+pauseTestScene = do
+  scene <- createScene
+  -- This test MUST be done in 'onEnter' and not on 'init'
+  -- otherwise the paused action will be resumed at 'onEnter' time
+  -- so ... this probably does not work :(
+  (winWidth, winHeight) <- getWinSize
+  l <- createLabelTTF "After 5 seconds grossini should move" "Thonburi" 16
+  addChild scene l
+  setPosition l (winWidth /2.0, 245.0)
+  -- Also, this test MUST be done, after [super onEnter]
+  -- Also probably problematic in haskell
+  grossini <- createSprite s_pathGrossini
+  setTag grossini TAG_GROSSINI
+  addChild scene grossini 0
 
-        var s = director.getWinSize();
-        var l = cc.LabelTTF.create("After 5 seconds grossini should move", "Thonburi", 16);
-        this.addChild(l);
-        l.setPosition(s.width / 2, 245);
+  schedule scene (onUnpause scene) 3
 
-        //
-        // Also, this test MUST be done, after [super onEnter]
-        //
-        var grossini = cc.Sprite.create(s_pathGrossini);
-        this.addChild(grossini, 0, TAG_GROSSINI);
-        grossini.setPosition(200, 200);
+  return scene
 
-        var action = cc.MoveBy.create(1, cc.p(150, 0));
+onUnpause :: Scene -> IO ()
+onUnpause scene = do
+  unschedule scene onUnpause 
+  node <- getChildByTag scene TAG_GROSSINI
+  resumeTarget node
 
-        director.getActionManager().addAction(action, grossini, true);
+------------------------------------------------------------------
+-- RemoveTest
+------------------------------------------------------------------
+removeTest :: ActionManagerTest
+removeTest = AMT pauseTest removeTestScene resumeTest "Remove Test"
 
-        this.schedule(this.onUnpause, 3);
-    },
-    onUnpause:function (dt) {
-        this.unschedule(this.onUnpause);
-        var node = this.getChildByTag(TAG_GROSSINI);
-        director.getActionManager().resumeTarget(node);
-    }
-});
+removeTestScene :: IO Scene
+removeTestScene = do
+  scene <- createScene
 
-//------------------------------------------------------------------
-//
-// RemoveTest
-//
-//------------------------------------------------------------------
-var RemoveTest = ActionManagerTest.extend({
-    title:function () {
-        return "Remove Test";
-    },
-    onEnter:function () {
-        this._super();
+  (winWidth, winHeight) <- getWinSize
+  l <- createLabelTTF "Should not crash" "Thonburi" 16
 
-        var s = director.getWinSize();
-        var l = cc.LabelTTF.create("Should not crash", "Thonburi", 16);
-        this.addChild(l);
-        l.setPosition(s.width / 2, 245);
+  addChild_ scene l
+  setPosition l (winWidth / 2.0, 245.0)
 
-        var move = cc.MoveBy.create(2, cc.p(200, 0));
-        var callback = cc.CallFunc.create(this.stopAction, this);
-        var sequence = cc.Sequence.create(move, callback);
-        sequence.setTag(TAG_SEQUENCE);
+  child <- createSprite s_pathGrossini
+  setPosition child (200.0, 200.0)
+  setTag child TAG_GROSSINI
 
-        var child = cc.Sprite.create(s_pathGrossini);
-        child.setPosition(200, 200);
+  addChild scene scene 1
+  runAction child (TagAction TAG_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc stopAction scene])
 
-        this.addChild(child, 1, TAG_GROSSINI);
-        child.runAction(sequence);
-    },
-    stopAction:function () {
-        var sprite = this.getChildByTag(TAG_GROSSINI);
-        sprite.stopActionByTag(TAG_SEQUENCE);
-    }
-});
+  return scene
 
-//------------------------------------------------------------------
-//
-// ResumeTest
-//
-//------------------------------------------------------------------
-var ResumeTest = ActionManagerTest.extend({
-    title:function () {
-        return "Resume Test";
-    },
-    onEnter:function () {
-        this._super();
+stopAction :: Scene -> IO ()
+stopAction scene = do
+  sprite <- getChildByTag scene TAG_GROSSINI
+  stopActionByTag sprite TAG_SEQUENCE
 
-        var s = director.getWinSize();
-        var l = cc.LabelTTF.create("Grossini only rotate/scale in 3 seconds", "Thonburi", 16);
-        this.addChild(l);
-        l.setPosition(s.width / 2, 245);
+------------------------------------------------------------------
+-- ResumeTest
+------------------------------------------------------------------
+resumeTest :: ActionManagerTest
+resumeTest AMT removeTest resumeTestScene crashTest "Resume Test"
 
-        var grossini = cc.Sprite.create(s_pathGrossini);
-        this.addChild(grossini, 0, TAG_GROSSINI);
-        grossini.setPosition(s.width / 2, s.height / 2);
+resumeTestScene :: IO Scene
+resumeTestScene = do
+  scene <- createScene
 
-        grossini.runAction(cc.ScaleBy.create(2, 2));
+  (winWidth, winHeight) <- getWinSize
+  l <- createLabelTTF "Grossini only rotate/scale in 3 seconds" "Thonburi" 16
+  addChild_ scene l
+  setPosition l (winWidth/2.0, 245.0)
 
-        director.getActionManager().pauseTarget(grossini);
-        grossini.runAction(cc.RotateBy.create(2, 360));
+  grossini <- createSprite s_pathGrossini
+  setTag grossini TAG_GROSSINI
 
-        this.schedule(this.resumeGrossini, 3.0);
-    },
-    resumeGrossini:function (time) {
-        this.unschedule(this.resumeGrossini);
+  addChild scene grossini 0
+  setPosition grossini (winWidth/2.0, winHeight/2.0)
 
-        var grossini = this.getChildByTag(TAG_GROSSINI);
-        director.getActionManager().resumeTarget(grossini);
-    }
-});
+  runAction grossini (ScaleBy 2.0 2.0)
+  pauseTarget grossini
 
-var ActionManagerTestScene = TestScene.extend({
-    runThisTest:function () {
-        sceneIdx = -1;
-        MAX_LAYER = 5;
-        var layer = nextActionManagerAction();
-        this.addChild(layer);
-        director.replaceScene(this);
-    }
-});
+  runAction grossini (RotateBy 2.0 360.0)  
+
+  schedule scene (resumeGrossini scene) 3.0
+
+  return scene
+
+resumeGrossini :: Scene -> IO ()
+resuimeGrossini scene = do
+  unschedule scene resumeGrossini
+  grossini <- getChildByTag scene TAG_GROSSINI
+  resumeTarget grossini
 
