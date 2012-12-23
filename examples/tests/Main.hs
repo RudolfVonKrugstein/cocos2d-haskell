@@ -1,5 +1,8 @@
 module Main where
 
+import Cocos2d
+import ActionManagerTest
+
 addMainMenuMenu :: Scene -> IO ()
 addMainMenuMenu s = do
   label    <- createLabelTTF "MeinMenu" "Arial" 20
@@ -33,10 +36,10 @@ mainMenuScene = do
   
   items <- mapM (\(t,i) -> do label <- createLabelTTF (title t) "Arial" 24
                               menuItem <- createMenuItemLabel label (test t)
-                              setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * LINE_SPACE
+                              setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * LINE_SPACE)
                 ) $ zip tests [0.0..]
   
-  itemMenu = createMenu items
+  itemMenu <- createMenu items
   addChild_ l menu
 
   setTouchesMoved s (onTouchesMoved menu)
@@ -69,8 +72,43 @@ data Test = Test {
                   testScene :: IO ()
                  }
 
+actionTestScene = undefined :: IO Scene
+box2DTestScene = undefined :: IO Scene
+chipmunkTestScene = undefined :: IO Scene
+clickAndMoveTestScene = undefined :: IO Scene
+cocosDenshionTestScene = undefined :: IO Scene
+currentLanguageTestScene = undefined :: IO Scene
+drawPrimitivesTestScene = undefined :: IO Scene
+easeActionsTestScene = undefined :: IO Scene
+eventTestScene = undefined :: IO Scene
+extensionsTestScene = undefined :: IO Scene
+effectsTestScene = undefined :: IO Scene
+fontTestScene = undefined :: IO Scene
+intervalTestScene = undefined :: IO Scene
+labelTestScene = undefined :: IO Scene
+layerTestScene = undefined :: IO Scene
+menuTestScene = undefined :: IO Scene
+nodeTestScene = undefined :: IO Scene
+parallaxTestScene = undefined :: IO Scene
+particleTestScene = undefined :: IO Scene
+performanceTestScene = undefined :: IO Scene
+progressActionsTestScene = undefined :: IO Scene
+renderTextureTestScene = undefined :: IO Scene
+rotateWorldTestScene = undefined :: IO Scene
+sceneTestScene = undefined :: IO Scene
+schedulerTestScene = undefined :: IO Scene
+spriteTestScene = undefined :: IO Scene
+textInputTestScene = undefined :: IO Scene
+textureCacheTestScene = undefined :: IO Scene
+tileMapTestScene = undefined :: IO Scene
+touchesTestScene = undefined :: IO Scene
+transitionsTestScene = undefined :: IO Scene
+unitTestsScene = undefined :: IO Scene
+presentationTestsScene = undefined :: IO Scene
+
 tests :: [Test]
-	tests = [
+tests =
+  [
   Test "ActionManager Test"   actionManagerTestScene,
   Test "Action Test"          actionTestScene,
   Test "Box2D Test"           box2DTestScene,
@@ -106,4 +144,4 @@ tests :: [Test]
   Test "Transitions Test"     transitionsTestScene,
   Test "Unit Tests"           unitTestsScene,
   Test "cocos2d JS Presentation" presentationTestsScene
-]
+  ]

@@ -6,8 +6,8 @@ import Data.Functor
 
 data AppType
 type App = Ptr AppType
-data DirectorType
-type Director = Ptr DirectorType
+--data DirectorType
+--type Director = Ptr DirectorType
 data SceneType
 type Scene = Ptr SceneType
 data LayerType
@@ -30,13 +30,15 @@ type Node = Ptr NodeType
 -- Start cococs2d app
 foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
 
-foreign import jscall "cc.Director.getInstance()" getDirectorInstance :: IO Director
+--foreign import jscall "cc.Director.getInstance()" getDirectorInstance :: IO Director
 
-foreign import jscall "%1.setDisplayStats(%2)" setDisplayStats :: Director -> Bool -> IO ()
+foreign import jscall "cc.Director.getInstance().setDisplayStats(%1)" setDisplayStats :: Bool -> IO ()
 
-foreign import jscall "%1.setAnimationInterval(%2)" setAnimationInterval :: Director -> Double -> IO ()
+foreign import jscall "cc.Director.getInstance().setAnimationInterval(%1)" setAnimationInterval :: Double -> IO ()
 
-foreign import jscall "%1.runWithScene(%2)" runWithScene :: Director -> Scene -> IO ()
+foreign import jscall "cc.Director.getInstance().runWithScene(%1)" runWithScene :: Scene -> IO ()
+
+foreign import jscall "cc.Director.getInstance().replaceScene(%1)" replaceScene :: Scene -> IO ()
 
 foreign import jscall "new cc.Scene()" createScene :: IO Scene
 
@@ -88,6 +90,9 @@ class NodeDerived a where
   
   setRotation :: a -> Double -> IO ()
   setRotation a = nodeSetRotation (toNode a)
+
+  getContentSize :: a -> IO (Double,Double)
+  getContentSize a = sizeToTuple <$> nodeGetContentSize (toNode a)
   
   runAction :: a -> Action -> IO ()
   runAction n a = nodeRunAction (toNode n) $! (toJSAction a)
@@ -97,6 +102,7 @@ foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Poin
 foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> IO ()
 foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
+foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
 
 -- instances
@@ -136,7 +142,18 @@ foreign import jscall "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String ->
 foreign import jscall "cc.Sprite.create(%1)" createSprite :: String -> IO Sprite
 
 -- Actions
-data Action = Sequence [Action] | RotateTo Double Double | ScaleTo Double (Double,Double) | MoveBy Double (Double,Double) deriving (Show)
+data Action = Sequence [Action]
+			| RotateTo Double Double
+            | RotateBy Double Double
+            | ScaleTo Double (Double,Double)
+            | ScaleBy Double (Double,Double)
+            | MoveTo Double (Double,Double)
+            | MoveBy Double (Double,Double)
+            | DelayTime Double
+            | FadeIn Double
+            | FadeOut Double
+            | CallFunc (IO ())
+              deriving (Show)
 data JSActionType
 type JSAction = Ptr JSActionType
 
@@ -147,11 +164,24 @@ toJSAction :: Action -> JSAction
 toJSAction (Sequence (a:b:as))   = sequenceAction (toJSAction a) (toJSAction $ Sequence (b:as))
 toJSAction (Sequence [a])    = toJSAction a
 toJSAction (RotateTo t r)    = rotateToAction t r
+toJSAction (RotateBy t r)    = rotateByAction t r
 toJSAction (ScaleTo t (x,y)) = scaleToAction t x y
+toJSAction (ScaleBy t (x,y)) = scaleByAction t x y
+toJSAction (MoveTo t (x,y))  = moveToAction t x y
 toJSAction (MoveBy t (x,y))  = moveByAction t x y
+toJSAction (DelayTime t)     = delayTimeAction t
+toJSAction (FadeIn t)        = fadeInAction t
+toJSAction (FadeOut t)       = fadeOutAction t
+toJSAction (CallFunc f)      = callFuncAction f
 
-foreign import jscall "cc.Sequence.create(%1,%2)" sequenceAction :: JSAction -> JSAction -> JSAction
-foreign import jscall "cc.RotateTo.create(%1,%2)" rotateToAction :: Double -> Double -> JSAction
-foreign import jscall "cc.ScaleTo.create(%1,%2,%3)" scaleToAction :: Double -> Double -> Double -> JSAction
+foreign import jscall "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> JSAction
+foreign import jscall "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> JSAction
+foreign import jscall "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> JSAction
+foreign import jscall "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> JSAction
+foreign import jscall "cc.ScaleBy.create(%1,%2,%3)"      scaleByAction :: Double -> Double -> Double -> JSAction
+foreign import jscall "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double -> Double -> Double -> JSAction
 foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> JSAction
-
+foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> JSAction
+foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> JSAction
+foriegn import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> JSAction
+foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> JSAction

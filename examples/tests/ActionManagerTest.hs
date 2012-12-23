@@ -1,5 +1,8 @@
 module ActionManagerTest where
 
+import Cocos2d
+import Resources
+
 data ActionManagerTest = AMT { prev :: ActionManagerTest,
                                this :: IO Scene,
                                next :: ActionManagerTest,
@@ -43,7 +46,7 @@ crashTestScene = do
   scene <- createScene
 
   child <- createSprite s_pathGrossini
-  setPostion child (200.0,200.0)
+  setPosition child (200.0,200.0)
   addChild scene child 1
  
   -- Sum of all actions's duration is 1.5 second 
@@ -75,7 +78,7 @@ logicTestScene = do
 
   setPosition grossini (200.0, 200.0)
 
-  runAction (Sequence [MoveBy 1.0 (150.0,0.0), CallFunc $ onBugMe grossini]
+  runAction grossini (Sequence [MoveBy 1.0 (150.0,0.0), CallFunc $ onBugMe grossini])
   return scene
 
 onBugMe :: Sprite -> IO ()
@@ -149,7 +152,7 @@ stopAction scene = do
 -- ResumeTest
 ------------------------------------------------------------------
 resumeTest :: ActionManagerTest
-resumeTest AMT removeTest resumeTestScene crashTest "Resume Test"
+resumeTest = AMT removeTest resumeTestScene crashTest "Resume Test"
 
 resumeTestScene :: IO Scene
 resumeTestScene = do
