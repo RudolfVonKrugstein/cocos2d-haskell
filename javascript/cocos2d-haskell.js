@@ -28,3 +28,8 @@ var myApp = 0;
 function startCocos2dApp(start) {
 	myApp = new cocos2dApp(start)
 };
+
+// Function for casting to different types
+function returnSame(i,_) {
+	return [1,0,i];
+}

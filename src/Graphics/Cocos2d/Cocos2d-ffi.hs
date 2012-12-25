@@ -1,3 +1,9 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ImpredicativeTypes #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 module Cocos2d where
 
 import Haste
@@ -162,51 +168,58 @@ foreign import jscall "director.getActionManager().pauseTarget(%1)" nodePauseTar
 instance NodeDerived Node where
   toNode = id
 
-instance NodeDerived MenuItemImage where
-  toNode = menuItemImageToNode
-foreign import jscall "%1" menuItemImageToNode :: MenuItemImage -> Node
-
-instance NodeDerived MenuItemLabel where
-  toNode = menuItemLabelToNode
-foreign import jscall "%1" menuItemLabelToNode :: MenuItemLabel -> Node
-
 instance NodeDerived Sprite where
   toNode = spriteToNode
-foreign import jscall "%1" spriteToNode :: Sprite -> Node
+foreign import ccall "returnSame" spriteToNode :: Sprite -> Node
 
 instance NodeDerived Layer where
   toNode = layerToNode
-foreign import jscall "%1" layerToNode :: Layer -> Node
+foreign import ccall "returnSame" layerToNode :: Layer -> Node
 
 instance NodeDerived LabelTTF where
   toNode = labelttfToNode
-foreign import jscall "%1" labelttfToNode :: LabelTTF -> Node
+foreign import ccall "returnSame" labelttfToNode :: LabelTTF -> Node
 
 instance NodeDerived Scene where
   toNode = sceneToNode
-foreign import jscall "%1" sceneToNode :: Scene -> Node
+foreign import ccall "returnSame" sceneToNode :: Scene -> Node
+
+instance NodeDerived MenuItemImage where
+  toNode = menuItemImageToNode
+foreign import ccall "returnSame" menuItemImageToNode :: MenuItem -> Node
+
+instance NodeDerived MenuItemLabel where
+  toNode = menuItemImageToNode
+foreign import ccall "returnSame" menuItemLabelToNode :: MenuItem -> Node
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
-createMenuWithItems :: [MenuItemDerived] -> IO Menu
+createMenuWithItems :: [MenuItem] -> IO Menu
 createMenuWithItems items = do
   m <- createMenu
-  mapM_ (addChild_ m) items
+  mapM_ (addMenuItem m) items
   return m
+
+foreign import jscall "%1.addChild(%2)" menuAddMenuItem :: Menu -> MenuItem -> IO ()
 
 foreign import jscall "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String -> String -> Int -> IO LabelTTF
 
 foreign import jscall "cc.Sprite.create(%1)" createSprite :: String -> IO Sprite
 
-class MenuItemDerived a where
-  toMenuItem :: a -> MenuItem
+class MenuItemDerived i where
+  toMenuItem :: i -> MenuItem
+  addMenuItem :: Menu -> i -> IO ()
+  addMenuItem m i = menuAddMenuItem m (toMenuItem i)
+
+instance MenuItemDerived MenuItem where
+  toMenuItem = id
 
 instance MenuItemDerived MenuItemImage where
   toMenuItem = menuItemImageToMenuItem
-foreign import jscall "%1" menuItemImageToMenuItem :: MenuItemImage -> MenuItem
+foreign import ccall "returnSame" menuItemImageToMenuItem :: MenuItemImage -> MenuItem
 
 instance MenuItemDerived MenuItemLabel where
   toMenuItem = menuItemLabelToMenuItem
-foreign import jscall "%1" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
+foreign import ccall "returnSame" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
 
 -- Actions
 data Action = Sequence [Action]
