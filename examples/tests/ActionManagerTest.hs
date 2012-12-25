@@ -26,13 +26,13 @@ startSceneFromActionManagerTest amt = do
   item2 <- createMenuItemImage s_pathR1 s_pathR2 (startSceneFromActionManagerTest amt)
   item3 <- createMenuItemImage s_pathF1 s_pathF2 (startSceneFromActionManagerTest (next amt))
 
-  menu <- createMenu [item1,item2,item3]
+  menu <- createMenuWithItems [item1,item2,item3]
 
   setPosition menu (0.0,0.0)
   (width2,height2) <- getContentSize item2
 
   setPosition item1 (winWidth /2.0 - width2 *2.0, height2 /2.0)
-  setPosition item2 (winWidth/2.0, height2 /2 .0)
+  setPosition item2 (winWidth/2.0, height2 /2.0)
   setPosition item3 (winWidth/2.0 + width2 * 2.0, height2 /2.0)
   
   addChild scene menu 1
@@ -59,10 +59,12 @@ crashTestScene = do
   
   -- after 1.4 seconds, scene will be removed
   runAction scene (Sequence [DelayTime 1.4, CallFunc $ removeScene scene])
+  return scene
 
 removeScene :: Scene -> IO ()
 removeScene scene = do
-  removeChild (getParent scene) scene
+  p <- getParent scene
+  removeChild p scene
   startSceneFromActionManagerTest (next crashTest)
 
 ------------------------------------------------------------------
@@ -88,7 +90,7 @@ logicTestScene = do
 onBugMe :: Sprite -> IO ()
 onBugMe sprite = do
   stopAllActions sprite
-  runAction sprite (ScaleTo 2.0 2.0)
+  runAction sprite (ScaleTo 2.0 (2.0,2.0))
 
 ------------------------------------------------------------------
 -- PauseTest
@@ -104,7 +106,7 @@ pauseTestScene = do
   -- so ... this probably does not work :(
   (winWidth, winHeight) <- getWinSize
   l <- createLabelTTF "After 5 seconds grossini should move" "Thonburi" 16
-  addChild scene l
+  addChild_ scene l
   setPosition l (winWidth /2.0, 245.0)
   -- Also, this test MUST be done, after [super onEnter]
   -- Also probably problematic in haskell
@@ -112,13 +114,12 @@ pauseTestScene = do
   setTag grossini tag_GROSSINI
   addChild scene grossini 0
 
-  schedule scene (onUnpause scene) 3
+  scheduleOnce scene (onUnpause scene) 3
 
   return scene
 
 onUnpause :: Scene -> IO ()
 onUnpause scene = do
-  unschedule scene onUnpause 
   node <- getChildByTag scene tag_GROSSINI
   resumeTarget node
 
@@ -143,7 +144,7 @@ removeTestScene = do
   setTag child tag_GROSSINI
 
   addChild scene scene 1
-  runAction child (TagAction tag_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc stopAction scene])
+  runAction child (TagAction tag_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc $ stopAction scene])
 
   return scene
 
@@ -173,18 +174,17 @@ resumeTestScene = do
   addChild scene grossini 0
   setPosition grossini (winWidth/2.0, winHeight/2.0)
 
-  runAction grossini (ScaleBy 2.0 2.0)
+  runAction grossini (ScaleBy 2.0 (2.0,2.0))
   pauseTarget grossini
 
   runAction grossini (RotateBy 2.0 360.0)  
 
-  schedule scene (resumeGrossini scene) 3.0
+  scheduleOnce scene (resumeGrossini scene) 3.0
 
   return scene
 
 resumeGrossini :: Scene -> IO ()
-resuimeGrossini scene = do
-  unschedule scene resumeGrossini
+resumeGrossini scene = do
   grossini <- getChildByTag scene tag_GROSSINI
   resumeTarget grossini
 

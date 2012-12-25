@@ -16,16 +16,22 @@ data SizeType
 type Size = Ptr SizeType
 data PointType
 type Point = Ptr PointType
-data MenuItemType
-type MenuItem = Ptr MenuItemType
+data MenuItemImageType
+type MenuItemImage = Ptr MenuItemImageType
+data MenuItemLabelType
+type MenuItemLabel = Ptr MenuItemLabelType
 data MenuType
 type Menu = Ptr MenuType
 data SpriteType
 type Sprite = Ptr SpriteType
-data TTFLabelType
-type TTFLabel = Ptr TTFLabelType
+data LabelTTFType
+type LabelTTF = Ptr LabelTTFType
+
+--base classes
 data NodeType
 type Node = Ptr NodeType
+data MenuItemType
+type MenuItem = Ptr MenuItemType
 
 -- Start cococs2d app
 foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
@@ -68,7 +74,8 @@ foreign import jscall "cc.Director.getInstance().getWinSize()" getWinSizeJS :: I
 getWinSize :: IO (Double,Double)
 getWinSize = sizeToTuple <$> getWinSizeJS
 
-foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItem
+foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItemImage
+foreign import jscall "cc.MenuItemLabel.create(%1,%2,%3,0)" createMenuItemLabel :: LabelTTF -> IO () -> IO MenuItemLabel
 
 foreign import jscall "history.go(-1)" quit :: IO ()
 
@@ -110,13 +117,27 @@ class NodeDerived a where
   getContentSize a = sizeToTuple <$> nodeGetContentSize (toNode a)
   
   runAction :: a -> Action -> IO ()
-  runAction n a = nodeRunAction (toNode n) $! (toJSAction a)
+  runAction n a = do
+    a1 <- toJSAction a
+    nodeRunAction (toNode n) $! a1
 
   stopAllActions :: a -> IO ()
   stopAllActions a = nodeStopAllActions (toNode a)
 
+  stopActionByTag :: a -> Int -> IO ()
+  stopActionByTag a i = nodeStopActionByTag (toNode a) i
+
   scheduleInterval :: a -> IO () -> Double -> IO ()
-  scheduleInterval a i = nodeScheduleInterval (toNode a) i
+  scheduleInterval a f i = nodeScheduleInterval (toNode a) f i
+
+  scheduleOnce :: a -> IO () -> Double -> IO ()
+  scheduleOnce a f d = nodeScheduleOnce (toNode a) f d
+
+  resumeTarget :: a -> IO ()
+  resumeTarget a = nodeResumeTarget (toNode a)
+
+  pauseTarget :: a -> IO ()
+  pauseTarget a = nodePauseTarget (toNode a)
 
 foreign import jscall "%1.addChild(%2,%3)" nodeAddChild :: Node -> Node -> Int -> IO ()
 foreign import jscall "%1.addChild(%2)" nodeAddChild_ :: Node -> Node -> IO ()
@@ -131,17 +152,23 @@ foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> 
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
 foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
-foreign import jscall "%1.schedule(funtion (a) {A(%1, [[1,a],0]);},%2)" scheduleInterval :: Node -> Double -> IO ()
+foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
+foreign import jscall "%1.schedule(funtion (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
+foreign import jscall "%1.scheduleOnce(funtion (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
+foreign import jscall "director.getActionManager().resumeTarget(%1)" nodeResumeTarget :: Node -> IO ()
+foreign import jscall "director.getActionManager().pauseTarget(%1)" nodePauseTarget :: Node -> IO ()
 
-foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> JSAction
 -- instances
-instance NodeDerived MenuItem where
-  toNode = menuItemToNode
-foreign import jscall "%1" menuItemToNode :: MenuItem -> Node
+instance NodeDerived Node where
+  toNode = id
 
-instance NodeDerived Menu where
-  toNode = menuToNode
-foreign import jscall "%1" menuToNode :: Menu -> Node
+instance NodeDerived MenuItemImage where
+  toNode = menuItemImageToNode
+foreign import jscall "%1" menuItemImageToNode :: MenuItemImage -> Node
+
+instance NodeDerived MenuItemLabel where
+  toNode = menuItemLabelToNode
+foreign import jscall "%1" menuItemLabelToNode :: MenuItemLabel -> Node
 
 instance NodeDerived Sprite where
   toNode = spriteToNode
@@ -151,24 +178,35 @@ instance NodeDerived Layer where
   toNode = layerToNode
 foreign import jscall "%1" layerToNode :: Layer -> Node
 
-instance NodeDerived TTFLabel where
-  toNode = ttflabelToNode
-foreign import jscall "%1" ttflabelToNode :: TTFLabel -> Node
+instance NodeDerived LabelTTF where
+  toNode = labelttfToNode
+foreign import jscall "%1" labelttfToNode :: LabelTTF -> Node
 
 instance NodeDerived Scene where
   toNode = sceneToNode
 foreign import jscall "%1" sceneToNode :: Scene -> Node
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
-createMenuWithItems :: [MenuItem] -> IO Menu
+createMenuWithItems :: [MenuItemDerived] -> IO Menu
 createMenuWithItems items = do
   m <- createMenu
   mapM_ (addChild_ m) items
   return m
 
-foreign import jscall "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String -> String -> Int -> IO TTFLabel
+foreign import jscall "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String -> String -> Int -> IO LabelTTF
 
 foreign import jscall "cc.Sprite.create(%1)" createSprite :: String -> IO Sprite
+
+class MenuItemDerived a where
+  toMenuItem :: a -> MenuItem
+
+instance MenuItemDerived MenuItemImage where
+  toMenuItem = menuItemImageToMenuItem
+foreign import jscall "%1" menuItemImageToMenuItem :: MenuItemImage -> MenuItem
+
+instance MenuItemDerived MenuItemLabel where
+  toMenuItem = menuItemLabelToMenuItem
+foreign import jscall "%1" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
 
 -- Actions
 data Action = Sequence [Action]
@@ -182,35 +220,45 @@ data Action = Sequence [Action]
             | FadeIn Double
             | FadeOut Double
             | CallFunc (IO ())
+            | TagAction Int Action
 
 data JSActionType
 type JSAction = Ptr JSActionType
 
-toJSAction :: Action -> JSAction
+toJSAction :: Action -> IO JSAction
 {-toJSAction a = unsafePerformIO $ do
   alert (show a)
   return -}
-toJSAction (Sequence (a:b:as))   = sequenceAction (toJSAction a) (toJSAction $ Sequence (b:as))
-toJSAction (Sequence [a])    = toJSAction a
-toJSAction (RotateTo t r)    = rotateToAction t r
-toJSAction (RotateBy t r)    = rotateByAction t r
-toJSAction (ScaleTo t (x,y)) = scaleToAction t x y
-toJSAction (ScaleBy t (x,y)) = scaleByAction t x y
-toJSAction (MoveTo t (x,y))  = moveToAction t x y
-toJSAction (MoveBy t (x,y))  = moveByAction t x y
-toJSAction (DelayTime t)     = delayTimeAction t
-toJSAction (FadeIn t)        = fadeInAction t
-toJSAction (FadeOut t)       = fadeOutAction t
-toJSAction (CallFunc f)      = callFuncAction f
+toJSAction (Sequence (a:b:as)) = do
+  a1 <- toJSAction a
+  a2 <- toJSAction (Sequence (b:as))
+  sequenceAction a1 a2
+toJSAction (Sequence [a])      = toJSAction a
+toJSAction (RotateTo t r)      = rotateToAction t r
+toJSAction (RotateBy t r)      = rotateByAction t r
+toJSAction (ScaleTo t (x,y))   = scaleToAction t x y
+toJSAction (ScaleBy t (x,y))   = scaleByAction t x y
+toJSAction (MoveTo t (x,y))    = moveToAction t x y
+toJSAction (MoveBy t (x,y))    = moveByAction t x y
+toJSAction (DelayTime t)       = delayTimeAction t
+toJSAction (FadeIn t)          = fadeInAction t
+toJSAction (FadeOut t)         = fadeOutAction t
+toJSAction (CallFunc f)        = callFuncAction f
+toJSAction (TagAction id a)    = do
+  a1 <- toJSAction a
+  tagAction a1 id
+  return a1
 
-foreign import jscall "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> JSAction
-foreign import jscall "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> JSAction
-foreign import jscall "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> JSAction
-foreign import jscall "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> JSAction
-foreign import jscall "cc.ScaleBy.create(%1,%2,%3)"      scaleByAction :: Double -> Double -> Double -> JSAction
-foreign import jscall "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double -> Double -> Double -> JSAction
-foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> JSAction
-foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> JSAction
-foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> JSAction
-foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> JSAction
-foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> JSAction
+foreign import jscall "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> IO JSAction
+foreign import jscall "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> IO JSAction
+foreign import jscall "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> IO JSAction
+foreign import jscall "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.ScaleBy.create(%1,%2,%3)"      scaleByAction :: Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
+foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
+foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
+foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
+foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
+
