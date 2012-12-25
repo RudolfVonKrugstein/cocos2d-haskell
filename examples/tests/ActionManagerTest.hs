@@ -7,9 +7,9 @@ import Resources
 tag_GROSSINI = 5561
 tag_SEQUENCE = 5562
 
-data ActionManagerTest = AMT { prev :: ActionManagerTest,
-                               this :: IO Scene,
-                               next :: ActionManagerTest,
+data ActionManagerTest = AMT { prev  :: ActionManagerTest,
+                               this  :: IO Scene,
+                               next  :: ActionManagerTest,
                                title :: String}
 
 -- Generic creation of test scene
@@ -26,7 +26,7 @@ startSceneFromActionManagerTest amt = do
   item2 <- createMenuItemImage s_pathR1 s_pathR2 (startSceneFromActionManagerTest amt)
   item3 <- createMenuItemImage s_pathF1 s_pathF2 (startSceneFromActionManagerTest (next amt))
 
-  menu <- createMenuWithItems [item1,item2,item3]
+  menu <- createMenuWithItems $ map (toMenuItem) [item1,item2,item3]
 
   setPosition menu (0.0,0.0)
   (width2,height2) <- getContentSize item2

@@ -9,6 +9,7 @@ module Cocos2d where
 import Haste
 import Haste.Prim
 import Data.Functor
+import Data.Word
 
 data AppType
 type App = Ptr AppType
@@ -39,6 +40,8 @@ type Node = Ptr NodeType
 data MenuItemType
 type MenuItem = Ptr MenuItemType
 
+data Color4b = Color4b Word8 Word8 Word8 Word8
+
 -- Start cococs2d app
 foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
 
@@ -55,6 +58,13 @@ foreign import jscall "cc.Director.getInstance().replaceScene(%1)" replaceScene 
 foreign import jscall "new cc.Scene()" createScene :: IO Scene
 
 foreign import jscall "new cc.Layer()" createLayer :: IO Layer
+
+foreign import jscall "cc.LayerGradient.create(cc.c4b(%1,%2,%3,%4), cc.c4b(%5,%6,%7,%8))" createLayerGradientJS :: Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> IO Layer
+createLayerGradient (Color4b a1 a2 a3 a4) (Color4b b1 b2 b3 b4) = createLayerGradientJS a1 a2 a3 a4 b1 b2 b3 b4
+
+-- Transitions
+foreign import jscall "cc.TransitionProgressRadialCCW.create(%1, %2)" createTransitionProgressRadialCCW :: Double -> Scene -> IO Scene
+
 
 foreign import jscall "%1.width" sizeWidth :: Size -> Double
 foreign import jscall "%1.height" sizeHeight :: Size -> Double
@@ -186,11 +196,15 @@ foreign import ccall "returnSame" sceneToNode :: Scene -> Node
 
 instance NodeDerived MenuItemImage where
   toNode = menuItemImageToNode
-foreign import ccall "returnSame" menuItemImageToNode :: MenuItem -> Node
+foreign import ccall "returnSame" menuItemImageToNode :: MenuItemImage -> Node
 
 instance NodeDerived MenuItemLabel where
-  toNode = menuItemImageToNode
-foreign import ccall "returnSame" menuItemLabelToNode :: MenuItem -> Node
+  toNode = menuItemLabelToNode
+foreign import ccall "returnSame" menuItemLabelToNode :: MenuItemLabel -> Node
+
+instance NodeDerived Menu where
+  toNode = menuToNode
+foreign import ccall "returnSame" menuToNode :: Menu -> Node
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO Menu
 createMenuWithItems :: [MenuItem] -> IO Menu

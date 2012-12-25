@@ -1,16 +1,19 @@
 module Main where
 
 import Cocos2d
+import Resources
 import ActionManagerTest
 
+line_SPACE = 40.0
+
 addMainMenuMenu :: Scene -> IO ()
-addMainMenuMenu s = do
+addMainMenuMenu scene = do
   label    <- createLabelTTF "MeinMenu" "Arial" 20
   menuItem <- createMenuItemLabel label goToMainMenu
   menu     <- createMenu [menuItem]
   setPosition menu (0.0,0.0)
   (width, _) <- getWinSize
-  setPosition menuItem (width - 50.0, 25.)
+  setPosition menuItem (width - 50.0, 25.0)
   addChild scene menu
 
 -- callback to return to the main menu
@@ -24,19 +27,19 @@ goToMainMenu = do
 mainMenuScene :: IO Scene
 mainMenuScene = do
   s <- createScene
-  l <- layerGradient (Color4B 0 0 0 255) (Color4B 0x46 0x82 0xB4 255)
+  l <- createLayerGradient (Color4b 0 0 0 255) (Color4b 0x46 0x82 0xB4 255)
 
   (winWidth, winHeight) <- getWinSize
   
   closeItem <- createMenuItemImage s_pathClose s_pathClose quit
   menu <- createMenu [closeItem]
   setPosition menu (0.0, 0.0)
-  setPosition closeItem (winWIdth - 30.0, winHeight -30.0)
+  setPosition closeItem (winWidth - 30.0, winHeight -30.0)
   addChild l menu 1
   
-  items <- mapM (\(t,i) -> do label <- createLabelTTF (title t) "Arial" 24
-                              menuItem <- createMenuItemLabel label (test t)
-                              setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * LINE_SPACE)
+  items <- mapM (\(t,i) -> do label <- createLabelTTF (testTitle t) "Arial" 24
+                              menuItem <- createMenuItemLabel label (runTest t)
+                              setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * line_SPACE)
                 ) $ zip tests [0.0..]
   
   itemMenu <- createMenu items
@@ -63,48 +66,48 @@ onScrollWheel menu delta = moveMenu menu delta
 moveMenu :: Menu -> Double -> IO ()
 moveMenu menu delta = do
   (_,y) <- getPosition menu
-  let newY = min ((fromIntegral (length tests)) * LINE_SPACE) $ max 0.0 (y+delta)
+  let newY = min ((fromIntegral (length tests)) * line_SPACE) $ max 0.0 (y+delta)
   writeIORef yPos newY
   setPosition menu (0,newY)
 
 data Test = Test {
-                  title     :: String,
-                  testScene :: IO ()
+                  testTitle     :: String,
+                  runTest       :: IO ()
                  }
 
-actionTestScene = undefined :: IO Scene
-box2DTestScene = undefined :: IO Scene
-chipmunkTestScene = undefined :: IO Scene
-clickAndMoveTestScene = undefined :: IO Scene
-cocosDenshionTestScene = undefined :: IO Scene
-currentLanguageTestScene = undefined :: IO Scene
-drawPrimitivesTestScene = undefined :: IO Scene
-easeActionsTestScene = undefined :: IO Scene
-eventTestScene = undefined :: IO Scene
-extensionsTestScene = undefined :: IO Scene
-effectsTestScene = undefined :: IO Scene
-fontTestScene = undefined :: IO Scene
-intervalTestScene = undefined :: IO Scene
-labelTestScene = undefined :: IO Scene
-layerTestScene = undefined :: IO Scene
-menuTestScene = undefined :: IO Scene
-nodeTestScene = undefined :: IO Scene
-parallaxTestScene = undefined :: IO Scene
-particleTestScene = undefined :: IO Scene
-performanceTestScene = undefined :: IO Scene
-progressActionsTestScene = undefined :: IO Scene
-renderTextureTestScene = undefined :: IO Scene
-rotateWorldTestScene = undefined :: IO Scene
-sceneTestScene = undefined :: IO Scene
-schedulerTestScene = undefined :: IO Scene
-spriteTestScene = undefined :: IO Scene
-textInputTestScene = undefined :: IO Scene
-textureCacheTestScene = undefined :: IO Scene
-tileMapTestScene = undefined :: IO Scene
-touchesTestScene = undefined :: IO Scene
-transitionsTestScene = undefined :: IO Scene
-unitTestsScene = undefined :: IO Scene
-presentationTestsScene = undefined :: IO Scene
+actionTestScene = undefined :: IO ()
+box2DTestScene = undefined :: IO ()
+chipmunkTestScene = undefined :: IO ()
+clickAndMoveTestScene = undefined :: IO ()
+cocosDenshionTestScene = undefined :: IO ()
+currentLanguageTestScene = undefined :: IO ()
+drawPrimitivesTestScene = undefined :: IO ()
+easeActionsTestScene = undefined :: IO ()
+eventTestScene = undefined :: IO ()
+extensionsTestScene = undefined :: IO ()
+effectsTestScene = undefined :: IO ()
+fontTestScene = undefined :: IO ()
+intervalTestScene = undefined :: IO ()
+labelTestScene = undefined :: IO ()
+layerTestScene = undefined :: IO ()
+menuTestScene = undefined :: IO ()
+nodeTestScene = undefined :: IO ()
+parallaxTestScene = undefined :: IO ()
+particleTestScene = undefined :: IO ()
+performanceTestScene = undefined :: IO ()
+progressActionsTestScene = undefined :: IO ()
+renderTextureTestScene = undefined :: IO ()
+rotateWorldTestScene = undefined :: IO ()
+sceneTestScene = undefined :: IO ()
+schedulerTestScene = undefined :: IO ()
+spriteTestScene = undefined :: IO ()
+textInputTestScene = undefined :: IO ()
+textureCacheTestScene = undefined :: IO ()
+tileMapTestScene = undefined :: IO ()
+touchesTestScene = undefined :: IO ()
+transitionsTestScene = undefined :: IO ()
+unitTestsScene = undefined :: IO ()
+presentationTestsScene = undefined :: IO ()
 
 tests :: [Test]
 tests =
