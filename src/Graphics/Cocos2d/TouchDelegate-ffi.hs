@@ -32,4 +32,4 @@ class TouchDelegateDerived a where
   setOnTouchBegan a f =
     touchDelegateSetOnTouchBegan (toTouchDelegate a) (foreignTouchToTouch >>= f)
 
-foreign import jscall "%1.ccTouchBegan = function(t,_) {return A(%2,[[1,t],0])[3];}" touchDelegateSetOnTouchBegan TouchDelegate -> (ForeignTouch -> IO Bool) -> IO ()
+foreign import jscall "%1.ccTouchBegan = function(t,_) {return A(%2,[[1,t],0])[2][1];}" touchDelegateSetOnTouchBegan TouchDelegate -> (ForeignTouch -> IO Bool) -> IO ()
