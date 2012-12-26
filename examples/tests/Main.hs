@@ -1,20 +1,27 @@
 module Main where
 
-import Cocos2d
+import Graphics.Cocos2d
+import Graphics.Cocos2d.TouchDelegate
 import Resources
 import ActionManagerTest
+import Data.IORef
 
 line_SPACE = 40.0
+
+main = cocos2dApp $ \app -> do
+  mainScene <- mainMenuScene
+  setAnimationInterval (1.0 / 60.0)
+  runWithScene mainScene
 
 addMainMenuMenu :: Scene -> IO ()
 addMainMenuMenu scene = do
   label    <- createLabelTTF "MeinMenu" "Arial" 20
   menuItem <- createMenuItemLabel label goToMainMenu
-  menu     <- createMenu [menuItem]
+  menu     <- createMenuWithItems [toMenuItem menuItem]
   setPosition menu (0.0,0.0)
   (width, _) <- getWinSize
   setPosition menuItem (width - 50.0, 25.0)
-  addChild scene menu
+  addChild_ scene menu
 
 -- callback to return to the main menu
 goToMainMenu :: IO ()
@@ -32,7 +39,7 @@ mainMenuScene = do
   (winWidth, winHeight) <- getWinSize
   
   closeItem <- createMenuItemImage s_pathClose s_pathClose quit
-  menu <- createMenu [closeItem]
+  menu <- createMenuWithItems [toMenuItem closeItem]
   setPosition menu (0.0, 0.0)
   setPosition closeItem (winWidth - 30.0, winHeight -30.0)
   addChild l menu 1
@@ -40,19 +47,21 @@ mainMenuScene = do
   items <- mapM (\(t,i) -> do label <- createLabelTTF (testTitle t) "Arial" 24
                               menuItem <- createMenuItemLabel label (runTest t)
                               setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * line_SPACE)
+                              return $ toMenuItem menuItem
                 ) $ zip tests [0.0..]
   
-  itemMenu <- createMenu items
+  itemMenu <- createMenuWithItems items
   addChild_ l menu
 
-  setTouchesMoved s (onTouchesMoved menu)
-  setMouseDragged s (onMouseDragged menu)
-  setScrollWheel  s (onScrollWheel menu)
+  setOnTouchesMoved s (onTouchesMoved menu)
+  setOnMouseDragged s (onMouseDragged menu)
+  setOnScrollWheel  s (onScrollWheel menu)
+  return s
 
 -- callbacks
 onTouchesMoved :: Menu -> [Touch] -> IO ()
 onTouchesMoved menu (t:_) = do
-  let (_,y) = delta t
+  let (_,y) = touchDelta t
   moveMenu menu y
 
 onMouseDragged :: Menu -> (Double,Double) -> IO ()
@@ -67,7 +76,6 @@ moveMenu :: Menu -> Double -> IO ()
 moveMenu menu delta = do
   (_,y) <- getPosition menu
   let newY = min ((fromIntegral (length tests)) * line_SPACE) $ max 0.0 (y+delta)
-  writeIORef yPos newY
   setPosition menu (0,newY)
 
 data Test = Test {

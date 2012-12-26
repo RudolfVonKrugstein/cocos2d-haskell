@@ -1,7 +1,9 @@
 module ActionManagerTest where
 
-import Cocos2d
+import Graphics.Cocos2d
 import Resources
+
+actionManagerTestScene = startSceneFromActionManagerTest crashTest
 
 -- some constants
 tag_GROSSINI = 5561

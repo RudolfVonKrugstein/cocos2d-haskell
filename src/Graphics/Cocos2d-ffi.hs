@@ -4,7 +4,7 @@
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Cocos2d where
+module Graphics.Cocos2d where
 
 import Haste
 import Haste.Prim
@@ -123,6 +123,9 @@ class NodeDerived a where
   setPosition :: a -> (Double,Double) -> IO ()
   setPosition a p = nodeSetPosition (toNode a) (tupleToPoint p)
 
+  getPosition :: a -> IO (Double,Double)
+  getPosition a = pointToTuple <$> nodeGetPosition (toNode a)
+
   setScale :: a -> Double -> IO ()
   setScale a = nodeSetScale (toNode a)
   
@@ -163,6 +166,7 @@ foreign import jscall "%1.getChildByTag(%2)" nodeGetChildByTag :: Node -> Int ->
 foreign import jscall "%1.getParent()" nodeGetParent :: Node -> IO Node
 foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
 foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> IO ()
+foreign import jscall "%1.getPosition()" nodeGetPosition :: Node -> IO Point
 foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size

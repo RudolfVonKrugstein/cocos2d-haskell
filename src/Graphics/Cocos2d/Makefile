@@ -1,8 +1,4 @@
-Cocos2d.hs: Cocos2d-ffi.hs
-	haste-ffi-parser Cocos2d-ffi.hs Cocos2d
-
-Cocos2d.js: Cocos2d-ffi.hs
-	haste-ffi-parser Cocos2d-ffi.hs Cocos2d
+all: TouchDelegate.hs TouchDelegate.js
 
 TouchDelegate.hs: TouchDelegate-ffi.hs
 	haste-ffi-parser TouchDelegate-ffi.hs TouchDelegate
