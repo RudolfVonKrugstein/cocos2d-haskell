@@ -5,6 +5,7 @@ import Graphics.Cocos2d.TouchDelegate
 import Resources
 import ActionManagerTest
 import Data.IORef
+import Haste
 
 line_SPACE = 40.0
 
@@ -51,11 +52,13 @@ mainMenuScene = do
                 ) $ zip tests [0.0..]
   
   itemMenu <- createMenuWithItems items
-  addChild_ l menu
+  addChild_ l itemMenu
 
   setOnTouchesMoved s (onTouchesMoved menu)
   setOnMouseDragged s (onMouseDragged menu)
   setOnScrollWheel  s (onScrollWheel menu)
+
+  addChild_ s l
   return s
 
 -- callbacks
@@ -83,39 +86,43 @@ data Test = Test {
                   runTest       :: IO ()
                  }
 
-actionTestScene = undefined :: IO ()
-box2DTestScene = undefined :: IO ()
-chipmunkTestScene = undefined :: IO ()
-clickAndMoveTestScene = undefined :: IO ()
-cocosDenshionTestScene = undefined :: IO ()
-currentLanguageTestScene = undefined :: IO ()
-drawPrimitivesTestScene = undefined :: IO ()
-easeActionsTestScene = undefined :: IO ()
-eventTestScene = undefined :: IO ()
-extensionsTestScene = undefined :: IO ()
-effectsTestScene = undefined :: IO ()
-fontTestScene = undefined :: IO ()
-intervalTestScene = undefined :: IO ()
-labelTestScene = undefined :: IO ()
-layerTestScene = undefined :: IO ()
-menuTestScene = undefined :: IO ()
-nodeTestScene = undefined :: IO ()
-parallaxTestScene = undefined :: IO ()
-particleTestScene = undefined :: IO ()
-performanceTestScene = undefined :: IO ()
-progressActionsTestScene = undefined :: IO ()
-renderTextureTestScene = undefined :: IO ()
-rotateWorldTestScene = undefined :: IO ()
-sceneTestScene = undefined :: IO ()
-schedulerTestScene = undefined :: IO ()
-spriteTestScene = undefined :: IO ()
-textInputTestScene = undefined :: IO ()
-textureCacheTestScene = undefined :: IO ()
-tileMapTestScene = undefined :: IO ()
-touchesTestScene = undefined :: IO ()
-transitionsTestScene = undefined :: IO ()
-unitTestsScene = undefined :: IO ()
-presentationTestsScene = undefined :: IO ()
+emptyScene = do
+  s <- createScene
+  replaceScene s
+
+actionTestScene = emptyScene
+box2DTestScene = emptyScene :: IO ()
+chipmunkTestScene = emptyScene :: IO ()
+clickAndMoveTestScene = emptyScene :: IO ()
+cocosDenshionTestScene = emptyScene :: IO ()
+currentLanguageTestScene = emptyScene :: IO ()
+drawPrimitivesTestScene = emptyScene :: IO ()
+easeActionsTestScene = emptyScene :: IO ()
+eventTestScene = emptyScene :: IO ()
+extensionsTestScene = emptyScene :: IO ()
+effectsTestScene = emptyScene :: IO ()
+fontTestScene = emptyScene :: IO ()
+intervalTestScene = emptyScene :: IO ()
+labelTestScene = emptyScene :: IO ()
+layerTestScene = emptyScene :: IO ()
+menuTestScene = emptyScene :: IO ()
+nodeTestScene = emptyScene :: IO ()
+parallaxTestScene = emptyScene :: IO ()
+particleTestScene = emptyScene :: IO ()
+performanceTestScene = emptyScene :: IO ()
+progressActionsTestScene = emptyScene :: IO ()
+renderTextureTestScene = emptyScene :: IO ()
+rotateWorldTestScene = emptyScene :: IO ()
+sceneTestScene = emptyScene :: IO ()
+schedulerTestScene = emptyScene :: IO ()
+spriteTestScene = emptyScene :: IO ()
+textInputTestScene = emptyScene :: IO ()
+textureCacheTestScene = emptyScene :: IO ()
+tileMapTestScene = emptyScene :: IO ()
+touchesTestScene = emptyScene :: IO ()
+transitionsTestScene = emptyScene :: IO ()
+unitTestsScene = emptyScene :: IO ()
+presentationTestsScene = emptyScene :: IO ()
 
 tests :: [Test]
 tests =
