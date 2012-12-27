@@ -55,9 +55,9 @@ mainMenuScene = do
   setPosition itemMenu (0.0, 0.0)
   addChild_ l itemMenu
 
-  setOnTouchesMoved l (onTouchesMoved menu)
-  setOnMouseDragged l (onMouseDragged menu)
-  setOnScrollWheel  l (onScrollWheel menu)
+  setOnTouchesMoved l (onTouchesMoved itemMenu)
+  setOnMouseDragged l (onMouseDragged itemMenu)
+  setOnScrollWheel  l (onScrollWheel itemMenu)
   setTouchEnabled l True
 
   addChild_ s l
