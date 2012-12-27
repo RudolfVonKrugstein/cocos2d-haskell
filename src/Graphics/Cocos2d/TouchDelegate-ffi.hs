@@ -28,7 +28,7 @@ foreign import jscall "%1.getPreviousLocation()"       touchGetPreviousLocation 
 
 foreignTouchToTouch :: ForeignTouch -> IO Touch
 foreignTouchToTouch ft = Touch <$> (pointToTuple <$> touchGetLocation ft)
-                                    <*> (pointToTuple  <$> touchGetPreviousLocation ft)
+                               <*> (pointToTuple <$> touchGetPreviousLocation ft)
 
 foreignTouchesToTouchList :: ForeignTouchSet -> IO [Touch]
 foreignTouchesToTouchList set = do
@@ -79,6 +79,9 @@ class TouchDelegateDerived a where
   setOnScrollWheel :: a -> (Double -> IO ()) -> IO ()
   setOnScrollWheel a f = touchDelegateSetOnScrollWheel (toTouchDelegate a) f
 
+  setTouchEnabled :: a -> Bool -> IO ()
+  setTouchEnabled a t = touchDelegateSetTouchEnabled (toTouchDelegate a) t
+
 foreign import jscall "%1.onTouchBegan = function(t,_) {return A(%2,[[1,t],0])[2][1];}" touchDelegateSetOnTouchBegan :: TouchDelegate -> (ForeignTouch -> IO Bool) -> IO ()
 foreign import jscall "%1.onTouchMoved = function(t,_) {A(%2,[[1,t],0]);}"              touchDelegateSetOnTouchMoved :: TouchDelegate -> (ForeignTouch -> IO ()) -> IO ()
 foreign import jscall "%1.onTouchCancelled = function(t,_) {A(%2,[[1,t],0]);}"          touchDelegateSetOnTouchCancelled :: TouchDelegate -> (ForeignTouch -> IO ()) -> IO ()
@@ -92,6 +95,8 @@ foreign import jscall "%1.onTouchesEnded = function(t,_) {A(%2,[[1,t],0]);}"    
 foreign import jscall "%1.onMouseDragged = function (e) {A(%2,[[1,e.getDelta()],0]);}"   touchDelegateSetOnMouseDragged :: TouchDelegate -> (Point -> IO ()) -> IO ()
 foreign import jscall "%1.onScrollWheel = function (e) {A(%2,[[1,e.getWheelDelta()],0]);}"   touchDelegateSetOnScrollWheel :: TouchDelegate -> (Double -> IO ()) -> IO ()
 
-instance TouchDelegateDerived Scene where
-  toTouchDelegate = sceneToTouchDelegate
-foreign import ccall "returnSame" sceneToTouchDelegate :: Scene -> TouchDelegate
+foreign import jscall "%1.setTouchEnabled(%2)" touchDelegateSetTouchEnabled :: TouchDelegate -> Bool -> IO ()
+
+instance TouchDelegateDerived Layer where
+  toTouchDelegate = layerToTouchDelegate
+foreign import ccall "returnSame" layerToTouchDelegate :: Layer -> TouchDelegate
