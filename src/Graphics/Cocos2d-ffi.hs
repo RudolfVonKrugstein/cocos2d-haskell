@@ -134,6 +134,11 @@ class NodeDerived a where
 
   getContentSize :: a -> IO (Double,Double)
   getContentSize a = sizeToTuple <$> nodeGetContentSize (toNode a)
+
+  addAction :: Action -> a -> Bool -> IO ()
+  addAction a n b = do
+    a1 <- toJSAction a
+    nodeAddAction a1 (toNode n) b
   
   runAction :: a -> Action -> IO ()
   runAction n a = do
@@ -171,12 +176,13 @@ foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
+foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
 foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
 foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
-foreign import jscall "%1.schedule(function (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
-foreign import jscall "%1.scheduleOnce(function (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
-foreign import jscall "director.getActionManager().resumeTarget(%1)" nodeResumeTarget :: Node -> IO ()
-foreign import jscall "director.getActionManager().pauseTarget(%1)" nodePauseTarget :: Node -> IO ()
+foreign import jscall "%1.schedule(function (a) {A(%2, [[1,a],0]);},%3)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
+foreign import jscall "%1.scheduleOnce(function (a) {A(%2, [[1,a],0]);},%3)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
+foreign import jscall "cc.Director.getInstance().getActionManager().resumeTarget(%1)" nodeResumeTarget :: Node -> IO ()
+foreign import jscall "cc.Director.getInstance().getActionManager().pauseTarget(%1)" nodePauseTarget :: Node -> IO ()
 
 -- instances
 instance NodeDerived Node where

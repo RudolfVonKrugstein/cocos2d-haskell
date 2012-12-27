@@ -40,9 +40,9 @@ mainMenuScene = do
   (winWidth, winHeight) <- getWinSize
   
   closeItem <- createMenuItemImage s_pathClose s_pathClose quit
+  setPosition closeItem (winWidth - 30.0, winHeight -30.0)
   menu <- createMenuWithItems [toMenuItem closeItem]
   setPosition menu (0.0, 0.0)
-  setPosition closeItem (winWidth - 30.0, winHeight -30.0)
   addChild l menu 1
   
   items <- mapM (\(t,i) -> do label <- createLabelTTF (testTitle t) "Arial" 24
@@ -52,6 +52,7 @@ mainMenuScene = do
                 ) $ zip tests [0.0..]
   
   itemMenu <- createMenuWithItems items
+  setPosition itemMenu (0.0, 0.0)
   addChild_ l itemMenu
 
   setOnTouchesMoved s (onTouchesMoved menu)

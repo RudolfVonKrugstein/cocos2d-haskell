@@ -2,6 +2,7 @@ module ActionManagerTest where
 
 import Graphics.Cocos2d
 import Resources
+import Haste (alert)
 
 actionManagerTestScene = startSceneFromActionManagerTest crashTest
 
@@ -57,7 +58,7 @@ crashTestScene = do
  
   -- Sum of all actions's duration is 1.5 second 
   runAction child (RotateBy 1.5 90.0)
-  runAction child (Sequence [DelayTime 0.4, FadeOut 1.1])
+  runAction child (Sequence [DelayTime 1.4, FadeOut 1.1])
   
   -- after 1.4 seconds, scene will be removed
   runAction scene (Sequence [DelayTime 1.4, CallFunc $ removeScene scene])
@@ -115,8 +116,10 @@ pauseTestScene = do
   grossini <- createSprite s_pathGrossini
   setTag grossini tag_GROSSINI
   addChild scene grossini 0
+  setPosition grossini (200.0, 200.0)
+  addAction (MoveBy 1.0 (150.0, 0.0)) grossini True
 
-  scheduleOnce scene (onUnpause scene) 3
+  scheduleOnce scene (onUnpause scene) 3.0
 
   return scene
 
@@ -145,7 +148,7 @@ removeTestScene = do
   setPosition child (200.0, 200.0)
   setTag child tag_GROSSINI
 
-  addChild scene scene 1
+  addChild scene child 1
   runAction child (TagAction tag_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc $ stopAction scene])
 
   return scene
