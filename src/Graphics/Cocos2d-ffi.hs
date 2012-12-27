@@ -73,7 +73,7 @@ sizeToTuple :: Size -> (Double,Double)
 sizeToTuple s = (sizeWidth s, sizeHeight s)
 
 foreign import jscall "%1.x" pointX :: Point -> Double
-foreign import jscall "%1.z" pointY :: Point -> Double
+foreign import jscall "%1.y" pointY :: Point -> Double
 foreign import jscall "cc.p(%1,%2)" point :: Double -> Double -> Point
 tupleToPoint :: (Double,Double) -> Point
 tupleToPoint t = point (fst t) (snd t)
