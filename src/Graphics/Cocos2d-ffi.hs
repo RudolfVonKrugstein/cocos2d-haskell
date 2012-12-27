@@ -91,7 +91,7 @@ getWinSize :: IO (Double,Double)
 getWinSize = sizeToTuple <$> getWinSizeJS
 
 foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItemImage
-foreign import jscall "cc.MenuItemLabel.create(%1,%2,%3,0)" createMenuItemLabel :: LabelTTF -> IO () -> IO MenuItemLabel
+foreign import jscall "cc.MenuItemLabel.create(%1,%2,0)" createMenuItemLabel :: LabelTTF -> IO () -> IO MenuItemLabel
 
 foreign import jscall "history.go(-1)" quit :: IO ()
 
@@ -173,8 +173,8 @@ foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Siz
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
 foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
 foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
-foreign import jscall "%1.schedule(funtion (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
-foreign import jscall "%1.scheduleOnce(funtion (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
+foreign import jscall "%1.schedule(function (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
+foreign import jscall "%1.scheduleOnce(function (a) {A(%1, [[1,a],0]);},%2)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
 foreign import jscall "director.getActionManager().resumeTarget(%1)" nodeResumeTarget :: Node -> IO ()
 foreign import jscall "director.getActionManager().pauseTarget(%1)" nodePauseTarget :: Node -> IO ()
 
