@@ -37,7 +37,7 @@ function returnSame(i,_) {
 // Function to create scene and add onEnter function
 function createHSScene(f) {
   var s = cc.Scene.create();
-  s.onEnter = funtion() {A(f,[[s,1],0]);};
+  s.onEnter = function() {A(f,[[1,s],0]);};
   return s;
 }
 
