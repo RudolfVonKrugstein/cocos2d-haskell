@@ -10,6 +10,7 @@ import Haste
 import Haste.Prim
 import Data.Functor
 import Data.Word
+import Graphics.Cocos2d.Action
 
 data AppType
 type App = Ptr AppType
@@ -114,9 +115,18 @@ class NodeDerived a where
   getPosition :: a -> IO (Double,Double)
   getPosition a = pointToTuple <$> nodeGetPosition (toNode a)
 
-  setScale :: a -> Double -> IO ()
-  setScale a = nodeSetScale (toNode a)
-  
+  setScale :: a -> (Double,Double) -> IO ()
+  setScale a (x,y) = nodeSetScale (toNode a) x y
+
+  setVisible :: a -> Bool -> IO ()
+  setVisible a t = nodeSetVisible (toNode a) t
+
+  setColor :: a -> Color4b -> IO ()
+  setColor a (Color4b r g b al) = nodeSetColor (toNode a) r g b al
+
+  setOpacity :: a -> Double -> IO ()
+  setOpacity a o = nodeSetOpacity (toNode a) o
+
   setRotation :: a -> Double -> IO ()
   setRotation a = nodeSetRotation (toNode a)
 
@@ -160,7 +170,10 @@ foreign import jscall "%1.getParent()" nodeGetParent :: Node -> IO Node
 foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
 foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> IO ()
 foreign import jscall "%1.getPosition()" nodeGetPosition :: Node -> IO Point
-foreign import jscall "%1.setScale(%2)" nodeSetScale :: Node -> Double -> IO ()
+foreign import jscall "%1.setScale(%2,%3)" nodeSetScale :: Node -> Double -> Double -> IO ()
+foreign import jscall "%1.setVisible(%2)" nodeSetVisible :: Node -> Bool -> IO ()
+foreign import jscall "%1.setColor(cc.c4b(%*))" nodeSetColor :: Node -> Word8 -> Word8 -> Word8 -> Word8 -> IO ()
+foreign import jscall "%1.setOpacity(%2)" nodeSetOpacity :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
@@ -228,58 +241,4 @@ foreign import ccall "returnSame" menuItemImageToMenuItem :: MenuItemImage -> Me
 instance MenuItemDerived MenuItemLabel where
   toMenuItem = menuItemLabelToMenuItem
 foreign import ccall "returnSame" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
-
--- Actions
-data Action = Sequence [Action]
-			| RotateTo Double Double
-            | RotateBy Double Double
-            | ScaleTo Double (Double,Double)
-            | ScaleBy Double (Double,Double)
-            | MoveTo Double (Double,Double)
-            | MoveBy Double (Double,Double)
-            | DelayTime Double
-            | FadeIn Double
-            | FadeOut Double
-            | CallFunc (IO ())
-            | TagAction Int Action
-
-data JSActionType
-type JSAction = Ptr JSActionType
-
-toJSAction :: Action -> IO JSAction
-{-toJSAction a = unsafePerformIO $ do
-  alert (show a)
-  return -}
-toJSAction (Sequence (a:b:as)) = do
-  a1 <- toJSAction a
-  a2 <- toJSAction (Sequence (b:as))
-  sequenceAction a1 a2
-toJSAction (Sequence [a])      = toJSAction a
-toJSAction (RotateTo t r)      = rotateToAction t r
-toJSAction (RotateBy t r)      = rotateByAction t r
-toJSAction (ScaleTo t (x,y))   = scaleToAction t x y
-toJSAction (ScaleBy t (x,y))   = scaleByAction t x y
-toJSAction (MoveTo t (x,y))    = moveToAction t x y
-toJSAction (MoveBy t (x,y))    = moveByAction t x y
-toJSAction (DelayTime t)       = delayTimeAction t
-toJSAction (FadeIn t)          = fadeInAction t
-toJSAction (FadeOut t)         = fadeOutAction t
-toJSAction (CallFunc f)        = callFuncAction f
-toJSAction (TagAction id a)    = do
-  a1 <- toJSAction a
-  tagAction a1 id
-  return a1
-
-foreign import jscall "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> IO JSAction
-foreign import jscall "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> IO JSAction
-foreign import jscall "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> IO JSAction
-foreign import jscall "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.ScaleBy.create(%1,%2,%3)"      scaleByAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
-foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
-foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
-foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
-foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
 

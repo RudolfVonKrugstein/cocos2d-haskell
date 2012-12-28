@@ -2,6 +2,7 @@ module ActionManagerTest where
 
 import Graphics.Cocos2d
 import Graphics.Cocos2d.Scene
+import Graphics.Cocos2d.Action
 import Resources
 import Haste (alert)
 import TestCase
