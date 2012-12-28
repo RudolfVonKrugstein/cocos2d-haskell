@@ -4,50 +4,18 @@ import Graphics.Cocos2d
 import Graphics.Cocos2d.Scene
 import Resources
 import Haste (alert)
+import TestCase
 
-actionManagerTestScene = startSceneFromActionManagerTest crashTest
+actionManagerTestScene = testCaseScene crashTest
 
 -- some constants
 tag_GROSSINI = 5561
 tag_SEQUENCE = 5562
 
-data ActionManagerTest = AMT { prev  :: ActionManagerTest,
-                               this  :: IO Scene,
-                               next  :: ActionManagerTest,
-                               title :: String}
-
--- Generic creation of test scene
-startSceneFromActionManagerTest :: ActionManagerTest -> IO ()
-startSceneFromActionManagerTest amt = do
-  (winWidth,winHeight) <- getWinSize
-  scene <- (this amt)
-  
-  label <- createLabelTTF (title amt) "Arial" 32
-  addChild scene label 1
-  setPosition label (winWidth/2.0, winHeight -50.0)
-  
-  item1 <- createMenuItemImage s_pathB1 s_pathB2 (startSceneFromActionManagerTest (prev amt))
-  item2 <- createMenuItemImage s_pathR1 s_pathR2 (startSceneFromActionManagerTest amt)
-  item3 <- createMenuItemImage s_pathF1 s_pathF2 (startSceneFromActionManagerTest (next amt))
-
-  menu <- createMenuWithItems $ map (toMenuItem) [item1,item2,item3]
-
-  setPosition menu (0.0,0.0)
-  (width2,height2) <- getContentSize item2
-
-  setPosition item1 (winWidth /2.0 - width2 *2.0, height2 /2.0)
-  setPosition item2 (winWidth/2.0, height2 /2.0)
-  setPosition item3 (winWidth/2.0 + width2 * 2.0, height2 /2.0)
-  
-  addChild scene menu 1
-
-  replaceScene scene
-
 ------------------------------------------------------------------
 -- Test1
 ------------------------------------------------------------------
-crashTest :: ActionManagerTest
-crashTest = AMT resumeTest crashTestScene logicTest "Test 1. Should not crash"
+crashTest = TestCase resumeTest crashTestScene logicTest "Test 1. Should not crash"
 
 crashTestScene :: IO Scene
 crashTestScene = createScene $ \scene -> do
@@ -69,13 +37,12 @@ removeLayer :: Layer -> IO ()
 removeLayer layer = do
   p <- getParent layer
   removeChild p layer
-  startSceneFromActionManagerTest (next crashTest)
+  testCaseScene (next crashTest) >>= replaceScene
 
 ------------------------------------------------------------------
 -- Test2
 ------------------------------------------------------------------
-logicTest :: ActionManagerTest
-logicTest = AMT crashTest logicTestScene pauseTest "Logic Test"
+logicTest = TestCase crashTest logicTestScene pauseTest "Logic Test"
 
 logicTestScene :: IO Scene
 logicTestScene = createScene $ \scene -> do
@@ -96,8 +63,7 @@ onBugMe sprite = do
 ------------------------------------------------------------------
 -- PauseTest
 ------------------------------------------------------------------
-pauseTest :: ActionManagerTest
-pauseTest = AMT logicTest pauseTestScene removeTest "Pause Test"
+pauseTest = TestCase logicTest pauseTestScene removeTest "Pause Test"
 
 pauseTestScene :: IO Scene
 pauseTestScene = createScene $ \scene -> do
@@ -124,8 +90,7 @@ onUnpause scene = do
 ------------------------------------------------------------------
 -- RemoveTest
 ------------------------------------------------------------------
-removeTest :: ActionManagerTest
-removeTest = AMT pauseTest removeTestScene resumeTest "Remove Test"
+removeTest = TestCase pauseTest removeTestScene resumeTest "Remove Test"
 
 removeTestScene :: IO Scene
 removeTestScene = createScene $ \scene -> do
@@ -150,8 +115,7 @@ stopAction scene = do
 ------------------------------------------------------------------
 -- ResumeTest
 ------------------------------------------------------------------
-resumeTest :: ActionManagerTest
-resumeTest = AMT removeTest resumeTestScene crashTest "Resume Test"
+resumeTest = TestCase removeTest resumeTestScene crashTest "Resume Test"
 
 resumeTestScene :: IO Scene
 resumeTestScene = createScene $ \scene -> do

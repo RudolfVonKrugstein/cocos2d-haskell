@@ -15,6 +15,7 @@ main = cocos2dApp $ \app -> do
   setAnimationInterval (1.0 / 60.0)
   runWithScene mainScene
 
+-- add main menu to scene
 addMainMenuMenu :: Scene -> IO ()
 addMainMenuMenu scene = do
   label    <- createLabelTTF "MeinMenu" "Arial" 20
@@ -46,7 +47,7 @@ mainMenuScene = createScene $ \s -> do
   addChild l menu 1
   
   items <- mapM (\(t,i) -> do label <- createLabelTTF (testTitle t) "Arial" 24
-                              menuItem <- createMenuItemLabel label (runTest t)
+                              menuItem <- createMenuItemLabel label (testScene t >>= runTest)
                               setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * line_SPACE)
                               return $ toMenuItem menuItem
                 ) $ zip tests [0.0..]
@@ -62,7 +63,13 @@ mainMenuScene = createScene $ \s -> do
 
   addChild_ s l
 
+runTest :: Scene -> IO ()
+runTest scene = do
+  addMainMenuMenu scene
+  replaceScene scene
+
 -- callbacks
+
 onTouchesMoved :: Menu -> [Touch] -> IO ()
 onTouchesMoved menu (t:_) = do
   let (_,y) = touchDelta t
@@ -82,48 +89,49 @@ moveMenu menu delta = do
   let newY = min ((fromIntegral (length tests)) * line_SPACE) $ max 0.0 (y+delta)
   setPosition menu (0,newY)
 
-data Test = Test {
-                  testTitle     :: String,
-                  runTest       :: IO ()
-                 }
 
-emptyScene = do
-  s <- createScene_
-  replaceScene s
+emptyScene = createScene_
+  
 
 actionTestScene = emptyScene
-box2DTestScene = emptyScene :: IO ()
-chipmunkTestScene = emptyScene :: IO ()
-clickAndMoveTestScene = emptyScene :: IO ()
-cocosDenshionTestScene = emptyScene :: IO ()
-currentLanguageTestScene = emptyScene :: IO ()
-drawPrimitivesTestScene = emptyScene :: IO ()
-easeActionsTestScene = emptyScene :: IO ()
-eventTestScene = emptyScene :: IO ()
-extensionsTestScene = emptyScene :: IO ()
-effectsTestScene = emptyScene :: IO ()
-fontTestScene = emptyScene :: IO ()
-intervalTestScene = emptyScene :: IO ()
-labelTestScene = emptyScene :: IO ()
-layerTestScene = emptyScene :: IO ()
-menuTestScene = emptyScene :: IO ()
-nodeTestScene = emptyScene :: IO ()
-parallaxTestScene = emptyScene :: IO ()
-particleTestScene = emptyScene :: IO ()
-performanceTestScene = emptyScene :: IO ()
-progressActionsTestScene = emptyScene :: IO ()
-renderTextureTestScene = emptyScene :: IO ()
-rotateWorldTestScene = emptyScene :: IO ()
-sceneTestScene = emptyScene :: IO ()
-schedulerTestScene = emptyScene :: IO ()
-spriteTestScene = emptyScene :: IO ()
-textInputTestScene = emptyScene :: IO ()
-textureCacheTestScene = emptyScene :: IO ()
-tileMapTestScene = emptyScene :: IO ()
-touchesTestScene = emptyScene :: IO ()
-transitionsTestScene = emptyScene :: IO ()
-unitTestsScene = emptyScene :: IO ()
-presentationTestsScene = emptyScene :: IO ()
+box2DTestScene = emptyScene
+chipmunkTestScene = emptyScene
+clickAndMoveTestScene = emptyScene
+cocosDenshionTestScene = emptyScene
+currentLanguageTestScene = emptyScene
+drawPrimitivesTestScene = emptyScene
+easeActionsTestScene = emptyScene
+eventTestScene = emptyScene
+extensionsTestScene = emptyScene
+effectsTestScene = emptyScene
+fontTestScene = emptyScene
+intervalTestScene = emptyScene
+labelTestScene = emptyScene
+layerTestScene = emptyScene
+menuTestScene = emptyScene
+nodeTestScene = emptyScene
+parallaxTestScene = emptyScene
+particleTestScene = emptyScene
+performanceTestScene = emptyScene
+progressActionsTestScene = emptyScene
+renderTextureTestScene = emptyScene
+rotateWorldTestScene = emptyScene
+sceneTestScene = emptyScene
+schedulerTestScene = emptyScene
+spriteTestScene = emptyScene
+textInputTestScene = emptyScene
+textureCacheTestScene = emptyScene
+tileMapTestScene = emptyScene
+touchesTestScene = emptyScene
+transitionsTestScene = emptyScene
+unitTestsScene = emptyScene
+presentationTestsScene = emptyScene
+
+-- all tests
+data Test = Test {
+                  testTitle     :: String,
+                  testScene       :: IO Scene
+                 }
 
 tests :: [Test]
 tests =
