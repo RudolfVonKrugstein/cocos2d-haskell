@@ -50,8 +50,7 @@ crashTest :: ActionManagerTest
 crashTest = AMT resumeTest crashTestScene logicTest "Test 1. Should not crash"
 
 crashTestScene :: IO Scene
-crashTestScene = do
-  scene <- createScene
+crashTestScene = createScene $ \scene -> do
   layer <- createLayer
   addChild_ scene layer
 
@@ -65,7 +64,6 @@ crashTestScene = do
   
   -- after 1.4 seconds, scene will be removed
   runAction layer (Sequence [DelayTime 1.4, CallFunc $ removeLayer layer])
-  return scene
 
 removeLayer :: Layer -> IO ()
 removeLayer layer = do
@@ -80,9 +78,7 @@ logicTest :: ActionManagerTest
 logicTest = AMT crashTest logicTestScene pauseTest "Logic Test"
 
 logicTestScene :: IO Scene
-logicTestScene = do
-  scene <- createScene
-
+logicTestScene = createScene $ \scene -> do
   grossini <- createSprite s_pathGrossini  
   
   setTag grossini 2
@@ -91,7 +87,6 @@ logicTestScene = do
   setPosition grossini (200.0, 200.0)
 
   runAction grossini (Sequence [MoveBy 1.0 (150.0,0.0), CallFunc $ onBugMe grossini])
-  return scene
 
 onBugMe :: Sprite -> IO ()
 onBugMe sprite = do
@@ -105,17 +100,14 @@ pauseTest :: ActionManagerTest
 pauseTest = AMT logicTest pauseTestScene removeTest "Pause Test"
 
 pauseTestScene :: IO Scene
-pauseTestScene = do
-  scene <- createScene
+pauseTestScene = createScene $ \scene -> do
   -- This test MUST be done in 'onEnter' and not on 'init'
   -- otherwise the paused action will be resumed at 'onEnter' time
-  -- so ... this probably does not work :(
   (winWidth, winHeight) <- getWinSize
   l <- createLabelTTF "After 5 seconds grossini should move" "Thonburi" 16
   addChild_ scene l
   setPosition l (winWidth /2.0, 245.0)
   -- Also, this test MUST be done, after [super onEnter]
-  -- Also probably problematic in haskell
   grossini <- createSprite s_pathGrossini
   setTag grossini tag_GROSSINI
   addChild scene grossini 0
@@ -123,8 +115,6 @@ pauseTestScene = do
   addAction (MoveBy 1.0 (150.0, 0.0)) grossini True
 
   scheduleOnce scene (onUnpause scene) 3.0
-
-  return scene
 
 onUnpause :: Scene -> IO ()
 onUnpause scene = do
@@ -138,9 +128,7 @@ removeTest :: ActionManagerTest
 removeTest = AMT pauseTest removeTestScene resumeTest "Remove Test"
 
 removeTestScene :: IO Scene
-removeTestScene = do
-  scene <- createScene
-
+removeTestScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
   l <- createLabelTTF "Should not crash" "Thonburi" 16
 
@@ -154,8 +142,6 @@ removeTestScene = do
   addChild scene child 1
   runAction child (TagAction tag_SEQUENCE $ Sequence [MoveBy 2.0 (200.0,0.0), CallFunc $ stopAction scene])
 
-  return scene
-
 stopAction :: Scene -> IO ()
 stopAction scene = do
   sprite <- getChildByTag scene tag_GROSSINI
@@ -168,9 +154,7 @@ resumeTest :: ActionManagerTest
 resumeTest = AMT removeTest resumeTestScene crashTest "Resume Test"
 
 resumeTestScene :: IO Scene
-resumeTestScene = do
-  scene <- createScene
-
+resumeTestScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
   l <- createLabelTTF "Grossini only rotate/scale in 3 seconds" "Thonburi" 16
   addChild_ scene l
@@ -188,8 +172,6 @@ resumeTestScene = do
   runAction grossini (RotateBy 2.0 360.0)  
 
   scheduleOnce scene (resumeGrossini scene) 3.0
-
-  return scene
 
 resumeGrossini :: Scene -> IO ()
 resumeGrossini scene = do

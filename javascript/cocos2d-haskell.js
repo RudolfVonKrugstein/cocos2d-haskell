@@ -33,3 +33,11 @@ function startCocos2dApp(start) {
 function returnSame(i,_) {
 	return [1,0,i];
 }
+
+// Function to create scene and add onEnter function
+function createHSScene(f) {
+  var s = cc.Scene.create();
+  s.onEnter = funtion() {A(f,[[s,1],0]);};
+  return s;
+}
+

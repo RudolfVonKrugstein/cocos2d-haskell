@@ -34,8 +34,7 @@ goToMainMenu = do
 
 -- the main menu scene
 mainMenuScene :: IO Scene
-mainMenuScene = do
-  s <- createScene
+mainMenuScene = createScene $ \s -> do
   l <- createLayerGradient (Color4b 0 0 0 255) (Color4b 0x46 0x82 0xB4 255)
 
   (winWidth, winHeight) <- getWinSize
@@ -62,7 +61,6 @@ mainMenuScene = do
   setTouchEnabled l True
 
   addChild_ s l
-  return s
 
 -- callbacks
 onTouchesMoved :: Menu -> [Touch] -> IO ()
@@ -90,7 +88,7 @@ data Test = Test {
                  }
 
 emptyScene = do
-  s <- createScene
+  s <- createScene_
   replaceScene s
 
 actionTestScene = emptyScene
