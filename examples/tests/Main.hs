@@ -2,6 +2,7 @@ module Main where
 
 import Graphics.Cocos2d
 import Graphics.Cocos2d.TouchDelegate
+import Graphics.Cocos2d.Scene
 import Resources
 import ActionManagerTest
 import Data.IORef

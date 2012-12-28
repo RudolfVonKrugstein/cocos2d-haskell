@@ -15,8 +15,6 @@ data AppType
 type App = Ptr AppType
 --data DirectorType
 --type Director = Ptr DirectorType
-data SceneType
-type Scene = Ptr SceneType
 data LayerType
 type Layer = Ptr LayerType
 data SizeType
@@ -51,20 +49,10 @@ foreign import jscall "cc.Director.getInstance().setDisplayStats(%1)" setDisplay
 
 foreign import jscall "cc.Director.getInstance().setAnimationInterval(%1)" setAnimationInterval :: Double -> IO ()
 
-foreign import jscall "cc.Director.getInstance().runWithScene(%1)" runWithScene :: Scene -> IO ()
-
-foreign import jscall "cc.Director.getInstance().replaceScene(%1)" replaceScene :: Scene -> IO ()
-
-foreign import jscall "new cc.Scene()" createScene :: IO Scene
-
 foreign import jscall "new cc.Layer()" createLayer :: IO Layer
 
 foreign import jscall "cc.LayerGradient.create(cc.c4b(%1,%2,%3,%4), cc.c4b(%5,%6,%7,%8))" createLayerGradientJS :: Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> IO Layer
 createLayerGradient (Color4b a1 a2 a3 a4) (Color4b b1 b2 b3 b4) = createLayerGradientJS a1 a2 a3 a4 b1 b2 b3 b4
-
--- Transitions
-foreign import jscall "cc.TransitionProgressRadialCCW.create(%1, %2)" createTransitionProgressRadialCCW :: Double -> Scene -> IO Scene
-
 
 foreign import jscall "%1.width" sizeWidth :: Size -> Double
 foreign import jscall "%1.height" sizeHeight :: Size -> Double
@@ -199,10 +187,6 @@ foreign import ccall "returnSame" layerToNode :: Layer -> Node
 instance NodeDerived LabelTTF where
   toNode = labelttfToNode
 foreign import ccall "returnSame" labelttfToNode :: LabelTTF -> Node
-
-instance NodeDerived Scene where
-  toNode = sceneToNode
-foreign import ccall "returnSame" sceneToNode :: Scene -> Node
 
 instance NodeDerived MenuItemImage where
   toNode = menuItemImageToNode
