@@ -34,10 +34,14 @@ function returnSame(i,_) {
 	return [1,0,i];
 }
 
-// Function to create scene and add onEnter function
-function createHSScene(f) {
-  var s = cc.Scene.create();
-  s.onEnter = function() {A(f,[[1,s],0]);};
-  return s;
-}
-
+//Scene for haskell with onEnter function
+var HaskellScene = cc.Scene.extend({
+  ctor:function (f) {
+    this._super();
+    this.funOnEnter = f;
+  },
+  onEnter:function() {
+    this._super();
+    this.funOnEnter(this);
+  }
+});

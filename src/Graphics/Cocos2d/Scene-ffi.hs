@@ -9,7 +9,7 @@ data SceneType
 type Scene = Ptr SceneType
 
 -- Construtor
-foreign import jscall "createHSScene(%1)" createScene :: (Scene -> IO ()) -> IO Scene
+foreign import jscall "new HaskellScene(function(s) {A(%1,[[1,s],0]);})" createScene :: (Scene -> IO ()) -> IO Scene
 createScene_ = createScene (\_ -> return ())
 
 -- set a scene as active scene
