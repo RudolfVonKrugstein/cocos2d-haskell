@@ -4,6 +4,7 @@ import Graphics.Cocos2d
 import Graphics.Cocos2d.TouchDelegate
 import Graphics.Cocos2d.Scene
 import Resources
+import TestCase
 import ActionManagerTest
 import Data.IORef
 import Haste
@@ -18,7 +19,7 @@ main = cocos2dApp $ \app -> do
 -- add main menu to scene
 addMainMenuMenu :: Scene -> IO ()
 addMainMenuMenu scene = do
-  label    <- createLabelTTF "MeinMenu" "Arial" 20
+  label    <- createLabelTTF "Main Menu" "Arial" 20
   menuItem <- createMenuItemLabel label goToMainMenu
   menu     <- createMenuWithItems [toMenuItem menuItem]
   setPosition menu (0.0,0.0)
@@ -47,7 +48,7 @@ mainMenuScene = createScene $ \s -> do
   addChild l menu 1
   
   items <- mapM (\(t,i) -> do label <- createLabelTTF (testTitle t) "Arial" 24
-                              menuItem <- createMenuItemLabel label (testScene t >>= runTest)
+                              menuItem <- createMenuItemLabel label (runTestCase (testCase t) addMainMenuMenu)
                               setPosition menuItem (winWidth /2.0, winHeight - (i + 1.0) * line_SPACE)
                               return $ toMenuItem menuItem
                 ) $ zip tests [0.0..]
@@ -62,11 +63,6 @@ mainMenuScene = createScene $ \s -> do
   setTouchEnabled l True
 
   addChild_ s l
-
-runTest :: Scene -> IO ()
-runTest scene = do
-  addMainMenuMenu scene
-  replaceScene scene
 
 -- callbacks
 
@@ -90,85 +86,85 @@ moveMenu menu delta = do
   setPosition menu (0,newY)
 
 
-emptyScene = createScene_
+emptyTestCase = TestCase emptyTestCase createScene_ emptyTestCase "Not implemented test case"
   
 
-actionTestScene = emptyScene
-box2DTestScene = emptyScene
-chipmunkTestScene = emptyScene
-clickAndMoveTestScene = emptyScene
-cocosDenshionTestScene = emptyScene
-currentLanguageTestScene = emptyScene
-drawPrimitivesTestScene = emptyScene
-easeActionsTestScene = emptyScene
-eventTestScene = emptyScene
-extensionsTestScene = emptyScene
-effectsTestScene = emptyScene
-fontTestScene = emptyScene
-intervalTestScene = emptyScene
-labelTestScene = emptyScene
-layerTestScene = emptyScene
-menuTestScene = emptyScene
-nodeTestScene = emptyScene
-parallaxTestScene = emptyScene
-particleTestScene = emptyScene
-performanceTestScene = emptyScene
-progressActionsTestScene = emptyScene
-renderTextureTestScene = emptyScene
-rotateWorldTestScene = emptyScene
-sceneTestScene = emptyScene
-schedulerTestScene = emptyScene
-spriteTestScene = emptyScene
-textInputTestScene = emptyScene
-textureCacheTestScene = emptyScene
-tileMapTestScene = emptyScene
-touchesTestScene = emptyScene
-transitionsTestScene = emptyScene
-unitTestsScene = emptyScene
-presentationTestsScene = emptyScene
+actionTestCase = emptyTestCase
+box2DTestCase = emptyTestCase
+chipmunkTestCase = emptyTestCase
+clickAndMoveTestCase = emptyTestCase
+cocosDenshionTestCase = emptyTestCase
+currentLanguageTestCase = emptyTestCase
+drawPrimitivesTestCase = emptyTestCase
+easeActionsTestCase = emptyTestCase
+eventTestCase = emptyTestCase
+extensionsTestCase = emptyTestCase
+effectsTestCase = emptyTestCase
+fontTestCase = emptyTestCase
+intervalTestCase = emptyTestCase
+labelTestCase = emptyTestCase
+layerTestCase = emptyTestCase
+menuTestCase = emptyTestCase
+nodeTestCase = emptyTestCase
+parallaxTestCase = emptyTestCase
+particleTestCase = emptyTestCase
+performanceTestCase = emptyTestCase
+progressActionsTestCase = emptyTestCase
+renderTextureTestCase = emptyTestCase
+rotateWorldTestCase = emptyTestCase
+sceneTestCase = emptyTestCase
+schedulerTestCase = emptyTestCase
+spriteTestCase = emptyTestCase
+textInputTestCase = emptyTestCase
+textureCacheTestCase = emptyTestCase
+tileMapTestCase = emptyTestCase
+touchesTestCase = emptyTestCase
+transitionsTestCase = emptyTestCase
+unitTestsCase = emptyTestCase
+presentationTestCase = emptyTestCase
 
 -- all tests
 data Test = Test {
                   testTitle     :: String,
-                  testScene       :: IO Scene
+                  testCase       :: TestCase
                  }
 
 tests :: [Test]
 tests =
   [
-  Test "ActionManager Test"   actionManagerTestScene,
-  Test "Action Test"          actionTestScene,
-  Test "Box2D Test"           box2DTestScene,
-  Test "Chipmunk Test"        chipmunkTestScene,
+  Test "ActionManager Test"   actionManagerTestCase,
+  Test "Action Test"          actionTestCase,
+  Test "Box2D Test"           box2DTestCase,
+  Test "Chipmunk Test"        chipmunkTestCase,
   -- BugsTest
-  Test "Click and Move Test"  clickAndMoveTestScene,
-  Test "CocosDenshion Test"   cocosDenshionTestScene,
-  Test "CurrentLanguage Test" currentLanguageTestScene,
-  Test "DrawPrimitives Test"  drawPrimitivesTestScene,
-  Test "EaseActions Test"     easeActionsTestScene,
-  Test "Event Test"           eventTestScene,
-  Test "Extensions Test"      extensionsTestScene,
-  Test "Effects Test"         effectsTestScene,
-  Test "Font Test"            fontTestScene,
-  Test "Interval Test"        intervalTestScene,
-  Test "Label Test"           labelTestScene,
-  Test "Layer Test"           layerTestScene,
-  Test "Menu Test"            menuTestScene,
-  Test "Node Test"            nodeTestScene,
-  Test "Parallax Test"        parallaxTestScene,
-  Test "Particle Test"        particleTestScene,
-  Test "Performance Test"     performanceTestScene,
-  Test "ProgressActions Test" progressActionsTestScene,
-  Test "RenderTexture Test"   renderTextureTestScene,
-  Test "RotateWorld Test"     rotateWorldTestScene,
-  Test "Scene Test"           sceneTestScene,
-  Test "Scheduler Test"       schedulerTestScene,
-  Test "Sprite Test"          spriteTestScene,
-  Test "TextInput Test"       textInputTestScene,
-  Test "TextureCache Test"    textureCacheTestScene,
-  Test "TileMap Test"         tileMapTestScene,
-  Test "Touches Test"         touchesTestScene,
-  Test "Transitions Test"     transitionsTestScene,
-  Test "Unit Tests"           unitTestsScene,
-  Test "cocos2d JS Presentation" presentationTestsScene
+  Test "Click and Move Test"  clickAndMoveTestCase,
+  Test "CocosDenshion Test"   cocosDenshionTestCase,
+  Test "CurrentLanguage Test" currentLanguageTestCase,
+  Test "DrawPrimitives Test"  drawPrimitivesTestCase,
+  Test "EaseActions Test"     easeActionsTestCase,
+  Test "Event Test"           eventTestCase,
+  Test "Extensions Test"      extensionsTestCase,
+  Test "Effects Test"         effectsTestCase,
+  Test "Font Test"            fontTestCase,
+  Test "Interval Test"        intervalTestCase,
+  Test "Label Test"           labelTestCase,
+  Test "Layer Test"           layerTestCase,
+  Test "Menu Test"            menuTestCase,
+  Test "Node Test"            nodeTestCase,
+  Test "Parallax Test"        parallaxTestCase,
+  Test "Particle Test"        particleTestCase,
+  Test "Performance Test"     performanceTestCase,
+  Test "ProgressActions Test" progressActionsTestCase,
+  Test "RenderTexture Test"   renderTextureTestCase,
+  Test "RotateWorld Test"     rotateWorldTestCase,
+  Test "Scene Test"           sceneTestCase,
+  Test "Scheduler Test"       schedulerTestCase,
+  Test "Sprite Test"          spriteTestCase,
+  Test "TextInput Test"       textInputTestCase,
+  Test "TextureCache Test"    textureCacheTestCase,
+  Test "TileMap Test"         tileMapTestCase,
+  Test "Touches Test"         touchesTestCase,
+  Test "Transitions Test"     transitionsTestCase,
+  Test "Unit Tests"           unitTestsCase,
+  Test "cocos2d JS Presentation" presentationTestCase
   ]

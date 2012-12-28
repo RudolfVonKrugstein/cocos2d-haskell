@@ -6,7 +6,7 @@ import Resources
 import Haste (alert)
 import TestCase
 
-actionManagerTestScene = testCaseScene crashTest
+actionManagerTestCase = crashTest
 
 -- some constants
 tag_GROSSINI = 5561
@@ -37,7 +37,7 @@ removeLayer :: Layer -> IO ()
 removeLayer layer = do
   p <- getParent layer
   removeChild p layer
-  testCaseScene (next crashTest) >>= replaceScene
+  runTestCase (next crashTest) (\_ -> return ())
 
 ------------------------------------------------------------------
 -- Test2
