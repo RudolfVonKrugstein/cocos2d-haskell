@@ -51,23 +51,25 @@ crashTest = AMT resumeTest crashTestScene logicTest "Test 1. Should not crash"
 crashTestScene :: IO Scene
 crashTestScene = do
   scene <- createScene
+  layer <- createLayer
+  addChild_ scene layer
 
   child <- createSprite s_pathGrossini
   setPosition child (200.0,200.0)
-  addChild scene child 1
+  addChild layer child 1
  
   -- Sum of all actions's duration is 1.5 second 
   runAction child (RotateBy 1.5 90.0)
   runAction child (Sequence [DelayTime 1.4, FadeOut 1.1])
   
   -- after 1.4 seconds, scene will be removed
-  runAction scene (Sequence [DelayTime 1.4, CallFunc $ removeScene scene])
+  runAction layer (Sequence [DelayTime 1.4, CallFunc $ removeLayer layer])
   return scene
 
-removeScene :: Scene -> IO ()
-removeScene scene = do
-  p <- getParent scene
-  removeChild p scene
+removeLayer :: Layer -> IO ()
+removeLayer layer = do
+  p <- getParent layer
+  removeChild p layer
   startSceneFromActionManagerTest (next crashTest)
 
 ------------------------------------------------------------------
