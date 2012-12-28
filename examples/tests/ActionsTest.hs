@@ -19,10 +19,6 @@ data Sprites = Sprites {
 toList :: Sprites -> [Sprite]
 toList sprites = [_grossini sprites, _tamara sprites, _kathia sprites]
 
--- Layer used for action demo
-actionDemoLayer :: IO Layer
-actionDemoLayer = createLayerGradient (Color4b 0 0 0 255) (Color4b 98 99 117 255)
-
 -- centers an shows the requested number of sprites
 centerSprites :: Sprites -> Int -> IO ()
 centerSprites s n = do
@@ -48,14 +44,14 @@ alignSpritesLeft s n = do
   mapM_ (\(y,s) -> setPosition s (60.0, y)) $ zip yPos sprites
 
 -- load the standard sprites and add them to the scene
-loadAndAddSprites :: Scene -> IO Sprites
-loadAndAddSprites scene = do
+loadAndAddSprites :: Layer -> IO Sprites
+loadAndAddSprites layer = do
   _grossini <- createSprite s_pathGrossini
   _tamara   <- createSprite s_pathSister1
   _kathia   <- createSprite s_pathSister2
-  addChild scene _grossini 1
-  addChild scene _tamara 2
-  addChild scene _kathia 3
+  addChild layer _grossini 1
+  addChild layer _tamara 2
+  addChild layer _kathia 3
   (winWidth, winHeight) <- getWinSize
   setPosition _grossini (winWidth / 2.0, winHeight/ 3.0)
   setPosition _tamara (winWidth / 2.0, 2* winHeight/ 3.0)
@@ -63,23 +59,35 @@ loadAndAddSprites scene = do
   return $ Sprites _grossini _tamara _kathia
 
 -- add a subtitle to a scene
-addSubtitle :: Scene -> String -> IO ()
-addSubtitle scene subtitle = do
+addSubtitle :: Layer -> String -> IO ()
+addSubtitle layer subtitle = do
   (winWidth, winHeight) <- getWinSize
   l <- createLabelTTF subtitle "Thonburi" 22
-  addChild scene l 1
+  addChild layer l 1
   setPosition l (winWidth/2.0, winHeight-60.0)
 
-addCode :: Scene -> String -> IO ()
-addCode scene code = do
+addCode :: Layer -> String -> IO ()
+addCode layer code = do
   (winWidth, winHeight) <- getWinSize
   label <- createLabelTTF code "Thonburi" 16
   setPosition label (winWidth/2.0, winHeight-120.0)
-  addChild scene label 10
+  addChild layer label 10
   labelBG <- createLabelTTF code "Thonburi" 16
   setColor labelBG (Color4b 10 10 255 255)
   setPosition labelBG (winWidth/2.0+1.0, winHeight-120.0-1.0)
-  addChild scene labelBG 9
+  addChild layer labelBG 9
+
+-- Layer used for action demo
+actionDemoLayer :: (Maybe String) -> (Maybe String) -> IO Layer
+actionDemoLayer subtitle code = do
+  l <- createLayerGradient (Color4b 0 0 0 255) (Color4b 98 99 117 255)
+  case subtitle of
+    Just s -> addSubtitle l s
+    _      -> return ()
+  case code of
+    Just c -> addCode l c
+    _      -> return ()
+  return l
 
 ------------------------------------------------------------------
 -- ActionManual
@@ -89,10 +97,11 @@ actionManualCase = TestCase actionMoveCase actionManualScene actionMoveCase "Act
 
 actionManualScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
-
-  addCode scene "sprite.setPosition( 10,20 );\nsprite.setRotation( 90 );\nsprite.setScale( 2 );"
-  addSubtitle scene "Manual Transformation"
-  sprites <- loadAndAddSprites scene
+  let code = Just "sprite.setPosition( 10,20 );\nsprite.setRotation( 90 );\nsprite.setScale( 2 );"
+      subtitle = Just "Manual Transformation"
+  layer <- actionDemoLayer subtitle code
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
   setScale (_tamara sprites) (2.5, -1.0)
   setPosition (_tamara sprites) (100.0, 70.0)
@@ -112,10 +121,11 @@ actionMoveCase = TestCase actionManualCase actionMoveScene actionManualCase "Act
 
 actionMoveScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
-
-  addCode scene "a = cc.MoveBy.create( time, cc.p(x,y) );\na = cc.MoveTo.create( time, cc.p(x,y) );"
-  addSubtitle scene "MoveTo / MoveBy";
-  sprites <- loadAndAddSprites scene
+  let code = Just "a = cc.MoveBy.create( time, cc.p(x,y) );\na = cc.MoveTo.create( time, cc.p(x,y) );"
+      subtitle = Just "MoveTo / MoveBy";
+  layer <- actionDemoLayer subtitle code
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
   centerSprites sprites 3 
   
@@ -125,111 +135,96 @@ actionMoveScene = createScene $ \scene -> do
   runAction (_grossini sprites) (Sequence [moveBy, Reverse moveBy])
   runAction (_kathia sprites) (MoveTo 1.0 (40.0,40.0))
 
+------------------------------------------------------------------
+-- ActionScale
+------------------------------------------------------------------
+
+actionScaleCase = TestCase actionMoveCase actionScaleScene actionSkewCase "ActionsTest"
+
+actionScaleScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just "a = cc.ScaleBy.create( time, scale );\na = cc.ScaleTo.create( time, scaleX, scaleY );"
+      subtitle = Just "ScaleTo / ScaleBy"
+  layer <- actionDemoLayer subtitle code
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
+
+  centerSprites sprites 3
+
+  let actionTo  = ScaleTo 2 (0.5, 0.5)
+      actionBy  = ScaleBy 2.0 (2.0, 2.0)
+      actionBy2 = ScaleBy 2.0 (0.25, 4.5)
+
+  runAction (_tamara sprites) actionTo
+  runAction (_kathia sprites) (Sequence [actionBy2, Reverse actionBy2])
+  runAction (_grossini sprites) (Sequence [actionBy, Reverse actionBy])
+
+------------------------------------------------------------------
+--	ActionSkew
+------------------------------------------------------------------
+actionSkewCase = TestCase actionScaleCase actionSkewScene actionSkewRotateScaleCase "ActionsTest"
+
+actionSkewScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just "a = cc.SkewBy.create( time, skew );\na = cc.SkewTo.create( time, skewX, skewY );"
+      subtitle = Just "SkewTo / SkewBy"
+  layer <- actionDemoLayer subtitle code
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
+
+  centerSprites sprites 3
+
+  let actionTo = SkewTo 2.0 (37.2, -372)
+      actionToBack = SkewTo 2.0 (0.0, 0.0)
+      actionBy = SkewBy 2.0 (0.0, -90.0)
+      actionBy2 = SkewBy 2.0 (45.0,45.0)
+
+  runAction (_tamara sprites) (Sequence [actionTo,actionToBack])
+  runAction (_grossini sprites) (Sequence [actionBy, Reverse actionBy])
+  runAction (_kathia sprites) (Sequence [actionBy2, Reverse actionBy2])
+
+actionSkewRotateScaleCase = TestCase actionSkewCase actionSkewRotateScaleScene actionManualCase "ActionsTest"
+
+actionSkewRotateScaleScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just Nothing
+      subtitle = Just "Skew + Rotate + Scale";
+  layer <- actionDemoLayer subtitle code
+  addChild_ scene layer
+
+  let boxSize = (100.0, 100.0)
+  box <- createLayerColor (Color4b 255 255 0 255)
+  setAnchorPoint box (0.0, 0.0)
+  setPosition box $ 0.5 *^ ((winWidth,winHeight) ^-^ boxSize)
+  setContentSize box boxSize
+
+  let markrside = 10.0
+  uL <- createLayerColor (Color4b 255 0 0 255)
+  addChild box uL
+  setContentSize uL (markrside,markrside)
+  setPosition uL (0.0, (snd boxSize) - markrside)
+  setAnchorPoint uL (0.0, 0.0)
+
+  uR <- createLayerColor (Color4b 0 0 255 255)
+  addChild box uR
+  setContentSize uR (markrside,markrside)
+  setPosition uR ((fst boxSize) markrside, (snd boxSize) - markrside)
+  setAnchorPoint ul (0.0, 0.0)
+
+  addChild layer box
+  
+  let actionTo = SkewTo 2.0 (0.0, 2.0)
+      rotateTo = RotateTo 2.0 61.0
+      actionScaleTo = ScaleTo 2.0 (-0.44, 0.47)
+      actionScaleToBack = ScaleTo 2.0 (1.0, 1.0)
+      rotateToBack = RotateTo 2.0 0.0
+      actionToBack = SkewTo 2.0 (0, 0)
+
+  runAction box (Sequence [actionTo, actionToBack])
+  runAction box (Sequence [rotateTo, rotateToBack])
+  runAction box (Sequence [actionScaleTo, actionScaleToBack])
+
 {-
-//------------------------------------------------------------------
-//
-// ActionScale
-//
-//------------------------------------------------------------------
-var ActionScale = ActionsDemo.extend({
-
-    _code:"a = cc.ScaleBy.create( time, scale );\n" +
-               "a = cc.ScaleTo.create( time, scaleX, scaleY );",
-
-    onEnter:function () {
-        this._super();
-
-        this.centerSprites(3);
-
-        var actionTo = cc.ScaleTo.create(2, 0.5);
-        var actionBy = cc.ScaleBy.create(2, 2);
-        var actionBy2 = cc.ScaleBy.create(2, 0.25, 4.5);
-
-        this._tamara.runAction(actionTo);
-        this._kathia.runAction(cc.Sequence.create(actionBy2, actionBy2.reverse()));
-        this._grossini.runAction(cc.Sequence.create(actionBy, actionBy.reverse()));
-
-    },
-    subtitle:function () {
-        return "ScaleTo / ScaleBy";
-    }
-});
-
-//------------------------------------------------------------------
-//
-//	ActionSkew
-//
-//------------------------------------------------------------------
-var ActionSkew = ActionsDemo.extend({
-
-    _code:"a = cc.SkewBy.create( time, skew );\n" +
-           "a = cc.SkewTo.create( time, skewX, skewY );",
-
-    onEnter:function () {
-        this._super();
-        this.centerSprites(3);
-        var actionTo = cc.SkewTo.create(2, 37.2, -37.2);
-        var actionToBack = cc.SkewTo.create(2, 0, 0);
-        var actionBy = cc.SkewBy.create(2, 0, -90);
-        var actionBy2 = cc.SkewBy.create(2, 45.0, 45.0);
-
-        this._tamara.runAction(cc.Sequence.create(actionTo, actionToBack));
-        this._grossini.runAction(cc.Sequence.create(actionBy, actionBy.reverse()));
-
-        this._kathia.runAction(cc.Sequence.create(actionBy2, actionBy2.reverse()));
-    },
-    subtitle:function () {
-        return "SkewTo / SkewBy";
-    }
-});
-
-var ActionSkewRotateScale = ActionsDemo.extend({
-    onEnter:function () {
-        this._super();
-        this._tamara.removeFromParent();
-        this._grossini.removeFromParent();
-        this._kathia.removeFromParent();
-
-        var winSize = director.getWinSize();
-
-        var boxSize = cc.size(100.0, 100.0);
-        var box = cc.LayerColor.create(cc.c4b(255, 255, 0, 255));
-        box.setAnchorPoint(cc.p(0, 0));
-        box.setPosition((winSize.width - boxSize.width) / 2, (winSize.height - boxSize.height) / 2);
-        box.setContentSize(boxSize);
-
-        var markrside = 10.0;
-        var uL = cc.LayerColor.create(cc.c4b(255, 0, 0, 255));
-        box.addChild(uL);
-        uL.setContentSize(cc.size(markrside, markrside));
-        uL.setPosition(0, boxSize.height - markrside);
-        uL.setAnchorPoint(cc.p(0, 0));
-
-        var uR = cc.LayerColor.create(cc.c4b(0, 0, 255, 255));
-        box.addChild(uR);
-        uR.setContentSize(cc.size(markrside, markrside));
-        uR.setPosition(boxSize.width - markrside, boxSize.height - markrside);
-        uR.setAnchorPoint(cc.p(0, 0));
-
-
-        this.addChild(box);
-        var actionTo = cc.SkewTo.create(2, 0, 2);
-        var rotateTo = cc.RotateTo.create(2, 61.0);
-        var actionScaleTo = cc.ScaleTo.create(2, -0.44, 0.47);
-
-        var actionScaleToBack = cc.ScaleTo.create(2, 1.0, 1.0);
-        var rotateToBack = cc.RotateTo.create(2, 0);
-        var actionToBack = cc.SkewTo.create(2, 0, 0);
-
-        box.runAction(cc.Sequence.create(actionTo, actionToBack));
-        box.runAction(cc.Sequence.create(rotateTo, rotateToBack));
-        box.runAction(cc.Sequence.create(actionScaleTo, actionScaleToBack));
-    },
-    subtitle:function () {
-        return "Skew + Rotate + Scale";
-    }
-});
-
 //------------------------------------------------------------------
 //
 //	ActionRotate
