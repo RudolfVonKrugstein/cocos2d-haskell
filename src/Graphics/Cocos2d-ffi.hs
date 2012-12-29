@@ -133,6 +133,9 @@ class NodeDerived a where
   getContentSize :: a -> IO (Double,Double)
   getContentSize a = sizeToTuple <$> nodeGetContentSize (toNode a)
 
+  setContentSize :: a -> (Double,Double) -> IO ()
+  setContentSize a (w,h) = nodeSetContentSize (toNode a) w h
+
   addAction :: Action -> a -> Bool -> IO ()
   addAction a n b = do
     a1 <- toJSAction a
@@ -176,6 +179,7 @@ foreign import jscall "%1.setColor(cc.c4b(%*))" nodeSetColor :: Node -> Word8 ->
 foreign import jscall "%1.setOpacity(%2)" nodeSetOpacity :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
+foreign import jscall "%1.setContentSize(cc.s(%2,%3))" nodeSetContentSize :: Node -> Double -> Double -> IO ()
 foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
 foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
 foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
