@@ -5,6 +5,7 @@ import Graphics.Cocos2d.Scene
 import Graphics.Cocos2d.Action
 import Resources
 import TestCase
+import Data.VectorSpace
 -- based on ActionsTest.js from cocos2d-html5
 
 actionsTestCase = actionManualCase
@@ -209,7 +210,7 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
   addChild box uR
   setContentSize uR (markrside,markrside)
   setPosition uR ((fst boxSize) markrside, (snd boxSize) - markrside)
-  setAnchorPoint ul (0.0, 0.0)
+  setAnchorPoint uL (0.0, 0.0)
 
   addChild layer box
   
