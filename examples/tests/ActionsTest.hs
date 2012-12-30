@@ -3,6 +3,7 @@ module ActionsTest where
 import Graphics.Cocos2d
 import Graphics.Cocos2d.Scene
 import Graphics.Cocos2d.Action
+import Graphics.Cocos2d.Animation
 import Resources
 import TestCase
 import Data.VectorSpace
@@ -416,194 +417,90 @@ actionAnimateScene = actionDemoScene subtitle code $ \sprites -> do
   -- Manual animation
   -- 
   let frameNames = map (\i -> "res/Images/grossini_dance_" ++ (show2DigitInt i) ++ ".png") [1..15]
-  animation <- createAnimation frameNames
-  setDelayPerUnit animation (2.8 / 14.0)
-  setRestoreOriginalFrame animation True
+      animation = ImageFileAnimation frameNames (2.8/14.0) True
 
   let action = AnimationAction animation
-  runAction (_grossini sprites) $ Sequene [action, Reverse $ action]
+  runAction (_grossini sprites) $ Sequence [action, Reverse $ action]
 
   -- 
   -- File animation
   -- With 2 loops and reverse
   loadAnimationsIntoCache s_animations2Plist
-  animation2 <- getAnimationFromCache "dance_1"
-
-  let action2 = AnimationAction animation2
+  let animation2 = CacheAnimation "dance_1"
+      action2 = AnimationAction animation2
   runAction (_tamara sprites) $ Sequence [action2, Reverse $ action2]
 
   --
   -- File animation
   --
   -- with 4 loops
-  animation3 <- copyAnimation animation2
-  setLoops animation3 4
-
-  let action3 = AnimationAction animation3
+  let animation3 = Loop 4 animation2
+      action3 = AnimationAction animation3
   runAction (_kathia sprites) action3
 
   where
     subtitle = Just "Center: Manual animation. Border: using file format animation"
     code = Nothing
+    show2DigitInt i = if i < 10 then '0':(show i) else (show i)
+
+
+------------------------------------------------------------------
+--	ActionSequence
+------------------------------------------------------------------
+actionSequenceScene = actionDemoScene subtitle code $ \sprites -> do
+  (winWidth, winHeight) <- getWinSize
+  alignSpritesLeft sprites 1
+
+  let action = Sequence [MoveBy 2.0 (240.0,0.0), RotateBy 2.0 540.0]
+  runAction (_grossini sprites) action
+  where
+    code = Just "a = cc.Sequence.create( a1, a2, a3,..., aN);"
+    subtitle = Just "Sequence: Move + Rotate"
+------------------------------------------------------------------
+--	ActionSequence2
+------------------------------------------------------------------
+actionSequence2Scene = actionDemoScene subtitle code $ \sprites -> do
+  (winWidth, winHeight) <- getWinSize
+  centerSprites sprites 1
+  setVisible (_grossini sprites) False
+  layer <- getParent (_grossini sprites)
+  let action = Sequence [Place (200.0, 200.0), Show, MoveBy 1.0 (100.0, 0.0), CallFunc $ callback1 layer, CallFunc $ callback2 layer, CallFunc $ callback3 layer]
+  runAction (_grossini sprites) action
+  where
+    code = Nothing
+    subtitle = Just "Sequence of InstantActions"
+    callback1 layer = do
+      (winWidth, winHeight) <- getWinSize
+      label <- createLabelTTF "callback 1 called" "Marker Felt" 16
+      setPosition label (winWidth /4.0, winHeight/2.0)
+      addChild_ layer label
+    callback2 layer = do
+      (winWidth, winHeight) <- getWinSize
+      label <- createLabelTTF "callback 2 called" "Marker Felt" 16
+      setPosition label (winWidth/4.0 * 2.0, winHeight / 2.0)
+      addChild_ layer label
+    callback3 layer = do
+      (winWidth, winHeight) <- getWinSize
+      label <- createLabelTTF "callback 3 called" "Marker Felt" 16
+      setPosition label (winWidth/4.0 * 3.0, winHeight / 2.0)
+      addChild_ layer label
+      
+------------------------------------------------------------------
+-- ActionCallFunc2
+------------------------------------------------------------------
+actionCallFunc2Scene = actionDemoScene subtitle code $ \sprites -> do
+  (winWidth, winHeight) <- getWinSize
+  centerSprites sprites 1
+  let action = Sequence [MoveBy 2.0 (200.0, 0.0),
+                         CallFunc $ removeFromParentAndCleanup (_grossini sprites)]
+  runAction (_grossini sprites) action
+
+  where
+    code = Nothing
+    subtitle = Just "CallFunc + removeFromParentAndCleanup. Grossini dissapears in 2s"
+    removeFromParentAndCleanup s = removeFromParent s
 
 {-
-//------------------------------------------------------------------
-//
-//	ActionSequence
-//
-//------------------------------------------------------------------
-var ActionSequence = ActionsDemo.extend({
-
-    _code:"a = cc.Sequence.create( a1, a2, a3,..., aN);",
-
-    onEnter:function () {
-        this._super();
-        this.alignSpritesLeft(1);
-
-        var action = cc.Sequence.create(
-            cc.MoveBy.create(2, cc.p(240, 0)),
-            cc.RotateBy.create(2, 540)
-            );
-
-        this._grossini.runAction(action);
-
-    },
-    subtitle:function () {
-        return "Sequence: Move + Rotate";
-    }
-});
-//------------------------------------------------------------------
-//
-//	ActionSequence2
-//
-//------------------------------------------------------------------
-var ActionSequence2 = ActionsDemo.extend({
-    onEnter:function () {
-        this._super();
-        this.centerSprites(1);
-        this._grossini.setVisible(false);
-        var action = cc.Sequence.create(
-            cc.Place.create(cc.p(200, 200)),
-            cc.Show.create(),
-            cc.MoveBy.create(1, cc.p(100, 0)),
-            cc.CallFunc.create(this.onCallback1, this),
-            cc.CallFunc.create(this.onCallback2.bind(this)),
-            cc.CallFunc.create(this.onCallback3, this));
-        this._grossini.runAction(action);
-
-    },
-    onCallback1:function () {
-        var s = director.getWinSize();
-        var label = cc.LabelTTF.create("callback 1 called", "Marker Felt", 16);
-        label.setPosition(s.width / 4 * 1, s.height / 2);
-
-        this.addChild(label);
-    },
-    onCallback2:function () {
-        var s = director.getWinSize();
-        var label = cc.LabelTTF.create("callback 2 called", "Marker Felt", 16);
-        label.setPosition(s.width / 4 * 2, s.height / 2);
-
-        this.addChild(label);
-    },
-    onCallback3:function () {
-        var s = director.getWinSize();
-        var label = cc.LabelTTF.create("callback 3 called", "Marker Felt", 16);
-        label.setPosition(s.width / 4 * 3, s.height / 2);
-
-        this.addChild(label);
-    },
-    subtitle:function () {
-        return "Sequence of InstantActions";
-    }
-});
-//------------------------------------------------------------------
-//
-//	ActionCallFunc1
-//
-//------------------------------------------------------------------
-var ActionCallFunc1 = ActionsDemo.extend({
-    _code:"a = cc.CallFunc.create( this.callback );\n" +
-            "a = cc.CallFunc.create( this.callback, this, optional_arg );",
-
-    onEnter:function () {
-        this._super();
-        this.centerSprites(3);
-
-        // Testing different ways to pass "this"
-        var action = cc.Sequence.create(
-            cc.MoveBy.create(2, cc.p(200, 0)),
-            cc.CallFunc.create(this.onCallback1.bind(this))  // 'this' is bound to the callback function using "bind"
-        );
-
-        var action2 = cc.Sequence.create(
-            cc.ScaleBy.create(2, 2),
-            cc.FadeOut.create(2),
-            cc.CallFunc.create(this.onCallback2, this)      // 'this' is passed as 2nd argument.
-        );
-
-        var action3 = cc.Sequence.create(
-            cc.RotateBy.create(3, 360),
-            cc.FadeOut.create(2),
-            cc.CallFunc.create(this.onCallback3, this, "Hi!")  // If you want to pass a optional value, like "Hi!", then you should pass 'this' too
-        );
-
-        this._grossini.runAction(action);
-        this._tamara.runAction(action2);
-        this._kathia.runAction(action3);
-
-    },
-    onCallback1:function (nodeExecutingAction, value) {
-        var s = director.getWinSize();
-        var label = cc.LabelTTF.create("callback 1 called", "Marker Felt", 16);
-        label.setPosition(s.width / 4 * 1, s.height / 2);
-        this.addChild(label);
-    },
-    onCallback2:function (nodeExecutingAction, value) {
-        var s = director.getWinSize();
-        var label = cc.LabelTTF.create("callback 2 called", "Marker Felt", 16);
-        label.setPosition(s.width / 4 * 2, s.height / 2);
-
-        this.addChild(label);
-    },
-    onCallback3:function (nodeExecutingAction, value) {
-        var s = director.getWinSize();
-        var label = cc.LabelTTF.create("callback 3 called:" + value, "Marker Felt", 16);
-        label.setPosition(s.width / 4 * 3, s.height / 2);
-        this.addChild(label);
-    },
-    subtitle:function () {
-        return "Callbacks: CallFunc and friends";
-    }
-});
-//------------------------------------------------------------------
-//
-// ActionCallFunc2
-//
-//------------------------------------------------------------------
-var ActionCallFunc2 = ActionsDemo.extend({
-    onEnter:function () {
-        this._super();
-        this.centerSprites(1);
-
-        var action = cc.Sequence.create(cc.MoveBy.create(2.0, cc.p(200, 0)),
-            cc.CallFunc.create(this.removeFromParentAndCleanup, this._grossini, true));
-
-        this._grossini.runAction(action);
-    },
-
-    removeFromParentAndCleanup:function (nodeExecutingAction, data) {
-        nodeExecutingAction.removeFromParent(data);
-    },
-
-    title:function () {
-        return "CallFunc + auto remove";
-    },
-    subtitle:function () {
-        return "CallFunc + removeFromParentAndCleanup. Grossini dissapears in 2s";
-    }
-});
-
 //------------------------------------------------------------------
 //
 // ActionCallFunc3
