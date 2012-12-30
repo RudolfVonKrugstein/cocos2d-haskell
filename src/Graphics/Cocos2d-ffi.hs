@@ -107,6 +107,9 @@ class NodeDerived a where
   getParent :: a -> IO Node
   getParent a = nodeGetParent (toNode a)
 
+  removeFromParent :: a -> IO ()
+  removeFromParent a = nodeRemoveFromParent (toNode a)
+
   removeChild :: (NodeDerived b) => a -> b -> IO ()
   removeChild a b = nodeRemoveChild (toNode a) (toNode b)
 
@@ -158,6 +161,7 @@ foreign import jscall "%1.removeChild(%2)" nodeRemoveChild :: Node -> Node -> IO
 foreign import jscall "%1.setTag(%2)" nodeSetTag :: Node -> Int -> IO ()
 foreign import jscall "%1.getChildByTag(%2)" nodeGetChildByTag :: Node -> Int -> IO Node
 foreign import jscall "%1.getParent()" nodeGetParent :: Node -> IO Node
+foreign import jscall "%1.removeFromParent()" nodeRemoveFromParent :: Node -> IO ()
 foreign import jscall "%1.setAnchorPoint(%2)" nodeSetAnchorPoint :: Node -> Point -> IO ()
 foreign import jscall "%1.setPosition(%2)" nodeSetPosition :: Node -> Point -> IO ()
 foreign import jscall "%1.getPosition()" nodeGetPosition :: Node -> IO Point
