@@ -389,89 +389,64 @@ actionFadeScene = actionDemoScene subtitle code $ \sprites -> do
   where code = Just "a = cc.FadeIn.create( time );\na = cc.FadeOut.create( time );"
         subtitle = Just "Blink"
 
+------------------------------------------------------------------
+-- ActionTint
+------------------------------------------------------------------
+actionTintScene = actionDemoScene subtitle code $ \sprites -> do
+  (winWidth, winHeight) <- getWinSize
+  centerSprites sprites 2
+
+  let action1 = TintTo 2.0 $ Color4b 255 0 255 255
+      action2 = TintBy 2.0 $ DeltaColor4b (-127) (-255) (-127) 0
+      action2Back = Reverse $ action2
+
+  runAction (_tamara sprites) action1
+  runAction (_kathia sprites) $ Sequence [action2, action2Back]
+  
+  where code = Just "a = cc.TintBy.create( time, red, green, blue );\na = cc.TintTo.create( time, red, green, blue );"
+        subtitle = Just "TintTo / TintBy";
+
+------------------------------------------------------------------
+-- ActionAnimate
+------------------------------------------------------------------
+actionAnimateScene = actionDemoScene subtitle code $ \sprites -> do
+  (winWidth, winHeight) <- getWinSize
+  centerSprites sprites 3
+  --
+  -- Manual animation
+  -- 
+  let frameNames = map (\i -> "res/Images/grossini_dance_" ++ (show2DigitInt i) ++ ".png") [1..15]
+  animation <- createAnimation frameNames
+  setDelayPerUnit animation (2.8 / 14.0)
+  setRestoreOriginalFrame animation True
+
+  let action = AnimationAction animation
+  runAction (_grossini sprites) $ Sequene [action, Reverse $ action]
+
+  -- 
+  -- File animation
+  -- With 2 loops and reverse
+  loadAnimationsIntoCache s_animations2Plist
+  animation2 <- getAnimationFromCache "dance_1"
+
+  let action2 = AnimationAction animation2
+  runAction (_tamara sprites) $ Sequence [action2, Reverse $ action2]
+
+  --
+  -- File animation
+  --
+  -- with 4 loops
+  animation3 <- copyAnimation animation2
+  setLoops animation3 4
+
+  let action3 = AnimationAction animation3
+  runAction (_kathia sprites) action3
+
+  where
+    subtitle = Just "Center: Manual animation. Border: using file format animation"
+    code = Nothing
+
 {-
-//------------------------------------------------------------------
-//
-// ActionTint
-//
-//------------------------------------------------------------------
-var ActionTint = ActionsDemo.extend({
-
-    _code:"a = cc.TintBy.create( time, red, green, blue );\n" +
-            "a = cc.TintTo.create( time, red, green, blue );",
-
-    onEnter:function () {
-        this._super();
-        this.centerSprites(2);
-
-        var action1 = cc.TintTo.create(2, 255, 0, 255);
-        var action2 = cc.TintBy.create(2, -127, -255, -127);
-        var action2Back = action2.reverse();
-
-        this._tamara.runAction(action1);
-        this._kathia.runAction(cc.Sequence.create(action2, action2Back));
-
-    },
-    subtitle:function () {
-        return "TintTo / TintBy";
-    }
-});
-
-//------------------------------------------------------------------
-//
-// ActionAnimate
-//
-//------------------------------------------------------------------
-var ActionAnimate = ActionsDemo.extend({
-    onEnter:function () {
-        this._super();
-        this.centerSprites(3);
-
-        //
-        // Manual animation
-        //
-        var animation = cc.Animation.create();
-        for (var i = 1; i < 15; i++) {
-            var frameName = "res/Images/grossini_dance_" + ((i < 10) ? ("0" + i) : i) + ".png";
-            animation.addSpriteFrameWithFile(frameName);
-        }
-        animation.setDelayPerUnit(2.8 / 14);
-        animation.setRestoreOriginalFrame(true);
-
-        var action = cc.Animate.create(animation);
-        this._grossini.runAction(cc.Sequence.create(action, action.reverse()));
-
-        //
-        // File animation
-        //
-        // With 2 loops and reverse
-        var animCache = cc.AnimationCache.getInstance();
-
-        animCache.addAnimations(s_animations2Plist);
-        var animation2 = animCache.getAnimation("dance_1");
-
-        var action2 = cc.Animate.create(animation2);
-        this._tamara.runAction(cc.Sequence.create(action2, action2.reverse()));
-
-        //
-        // File animation
-        //
-        // with 4 loops
-        var animation3 = animation2.copy();
-        animation3.setLoops(4);
-
-        var action3 = cc.Animate.create(animation3);
-        this._kathia.runAction(action3);
-    },
-
-    title:function () {
-        return "Animation";
-    },
-
-    subtitle:function () {
-        return "Center: Manual animation. Border: using file format animation";
-    }
-});
 //------------------------------------------------------------------
 //
 //	ActionSequence
