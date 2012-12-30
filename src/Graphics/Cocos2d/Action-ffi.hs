@@ -2,6 +2,8 @@ module Graphics.Cocos2d.Action where
 
 import Haste
 import Haste.Prim
+import Graphics.Cocos2d
+import Data.Word
 
 -- Actions
 data Action = Sequence [Action]
@@ -17,6 +19,8 @@ data Action = Sequence [Action]
             | JumpBy Double (Double,Double) Double Int
             | BezierTo Double ((Double,Double), (Double,Double), (Double,Double))
             | BezierBy Double ((Double,Double), (Double,Double), (Double,Double))
+            | TintTo Double Color4b
+            | TintBy Double DeltaColor4b
             | Blink Double Int
             | DelayTime Double
             | FadeIn Double
@@ -50,6 +54,8 @@ toJSAction (JumpTo t (x,y) h n)= jumpToAction t x y h n
 toJSAction (JumpBy t (x,y) h n)= jumpByAction t x y h n
 toJSAction (BezierTo t ((x1,y1),(x2,y2),(x3,y3))) = bezierToAction t x1 y1 x2 y2 x3 y3
 toJSAction (BezierBy t ((x1,y1),(x2,y2),(x3,y3))) = bezierByAction t x1 y1 x2 y2 x3 y3
+toJSAction (TintTo t (Color4b r g b a)) = tintToAction t r g b a
+toJSAction (TintBy t (DeltaColor4b r g b a)) = tintByAction t r g b a
 toJSAction (DelayTime t)       = delayTimeAction t
 toJSAction (FadeIn t)          = fadeInAction t
 toJSAction (FadeOut t)         = fadeOutAction t
@@ -77,6 +83,8 @@ foreign import jscall "cc.JumpTo.create(%1,cc.p(%2,%3),%4,%5)" jumpToAction :: D
 foreign import jscall "cc.JumpBy.create(%1,cc.p(%2,%3),%4,%5)" jumpByAction :: Double -> Double -> Double -> Double -> Int -> IO JSAction
 foreign import jscall "cc.BezierTo.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7)])" bezierToAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
 foreign import jscall "cc.BezierBy.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7)])" bezierByAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.TintTo.create(%1,%2,%3,%4,%5)" tintToAction :: Double -> Word8 -> Word8 -> Word8 -> Word8 -> IO JSAction
+foreign import jscall "cc.TintBy.create(%1,%2,%3,%4,%5)" tintByAction :: Double -> Int -> Int -> Int -> Int -> IO JSAction
 foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
 foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
 foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
@@ -86,3 +94,24 @@ foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -
 foreign import jscall "%1.reverse()"                     reverseAction :: JSAction -> IO JSAction
 foreign import jscall "cc.RepeatForever.create(%1)"      repeatForeverAction :: JSAction -> IO JSAction
 
+-- Operations on nodes
+addAction :: (NodeDerived a) => Action -> a -> Bool -> IO ()
+addAction a n b = do
+  a1 <- toJSAction a
+  nodeAddAction a1 (toNode n) b
+
+runAction :: (NodeDerived a) => a -> Action -> IO ()
+runAction n a = do
+  a1 <- toJSAction a
+  nodeRunAction (toNode n) $! a1
+
+stopAllActions :: (NodeDerived a) => a -> IO ()
+stopAllActions a = nodeStopAllActions (toNode a)
+
+stopActionByTag :: (NodeDerived a) => a -> Int -> IO ()
+stopActionByTag a i = nodeStopActionByTag (toNode a) i
+
+foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
+foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
+foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
+foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()

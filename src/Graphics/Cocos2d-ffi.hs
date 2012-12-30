@@ -10,7 +10,6 @@ import Haste
 import Haste.Prim
 import Data.Functor
 import Data.Word
-import Graphics.Cocos2d.Action
 
 data AppType
 type App = Ptr AppType
@@ -40,6 +39,7 @@ data MenuItemType
 type MenuItem = Ptr MenuItemType
 
 data Color4b = Color4b Word8 Word8 Word8 Word8
+data DeltaColor4b = DeltaColor4b Int Int Int Int
 
 -- Start cococs2d app
 foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
@@ -140,22 +140,6 @@ class NodeDerived a where
   setContentSize :: a -> (Double,Double) -> IO ()
   setContentSize a (w,h) = nodeSetContentSize (toNode a) w h
 
-  addAction :: Action -> a -> Bool -> IO ()
-  addAction a n b = do
-    a1 <- toJSAction a
-    nodeAddAction a1 (toNode n) b
-  
-  runAction :: a -> Action -> IO ()
-  runAction n a = do
-    a1 <- toJSAction a
-    nodeRunAction (toNode n) $! a1
-
-  stopAllActions :: a -> IO ()
-  stopAllActions a = nodeStopAllActions (toNode a)
-
-  stopActionByTag :: a -> Int -> IO ()
-  stopActionByTag a i = nodeStopActionByTag (toNode a) i
-
   scheduleInterval :: a -> IO () -> Double -> IO ()
   scheduleInterval a f i = nodeScheduleInterval (toNode a) f i
 
@@ -184,10 +168,6 @@ foreign import jscall "%1.setOpacity(%2)" nodeSetOpacity :: Node -> Double -> IO
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
 foreign import jscall "%1.setContentSize(cc.s(%2,%3))" nodeSetContentSize :: Node -> Double -> Double -> IO ()
-foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
-foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
-foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
-foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
 foreign import jscall "%1.schedule(function (a) {A(%2, [[1,a],0]);},%3)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
 foreign import jscall "%1.scheduleOnce(function (a) {A(%2, [[1,a],0]);},%3)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
 foreign import jscall "cc.Director.getInstance().getActionManager().resumeTarget(%1)" nodeResumeTarget :: Node -> IO ()
