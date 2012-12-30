@@ -326,7 +326,7 @@ actionBezierScene = createScene $ \scene -> do
 ------------------------------------------------------------------
 -- Issue1008
 --------------------------------------------------------------------
-actionIssue1008Case = TestCase actionBezierCase actionIssue1008Scene undefined "Issue 1008"
+actionIssue1008Case = TestCase actionBezierCase actionIssue1008Scene actionBlinkCase "Issue 1008"
 
 actionIssue1008Scene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
@@ -361,57 +361,51 @@ onTrace sprite = do
     logOut "Error: Issue 1008 is still open"
   else
     return ()
-{-//------------------------------------------------------------------
-//
-// ActionBlink
-//
-//------------------------------------------------------------------
-var ActionBlink = ActionsDemo.extend({
-    _code: "a = cc.Blink.create( time, #_of_blinks );",
+------------------------------------------------------------------
+-- ActionBlink
+------------------------------------------------------------------
+actionBlinkCase = TestCase actionBezierCase actionBlinkScene undefined "ActionsTest"
 
-    onEnter:function () {
-        this._super();
-        this.centerSprites(2);
+actionBlinkScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just "a = cc.Blink.create( time, #_of_blinks );"
+      subtitle = Just "Blink"
+  layer <- actionDemoLayer subtitle code 
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
-        var action1 = cc.Blink.create(2, 10);
-        var action2 = cc.Blink.create(2, 5);
+  centerSprites sprites 3
 
-        this._tamara.runAction(action1);
-        this._kathia.runAction(action2);
+  let action1 = Blink 2.0 10
+      action2 = Blink 2.0 5
 
-    },
-    subtitle:function () {
-        return "Blink";
-    }
-});
-//------------------------------------------------------------------
-//
-// ActionFade
-//
-//------------------------------------------------------------------
-var ActionFade = ActionsDemo.extend({
-    _code:"a = cc.FadeIn.create( time );\n" +
-            "a = cc.FadeOut.create( time );",
+  runAction (_tamara sprites) action1
+  runAction (_kathia sprites) action2
+------------------------------------------------------------------
+-- ActionFade
+------------------------------------------------------------------
+actionFadeCase = TestCase actionBlinkCase actionFadeScene undefined "ActionsTest"
 
-    onEnter:function () {
-        this._super();
-        this.centerSprites(2);
-        this._tamara.setOpacity(0);
-        var action1 = cc.FadeIn.create(1.0);
-        var action1Back = action1.reverse();
+actionFadeScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just "a = cc.FadeIn.create( time );\na = cc.FadeOut.create( time );"
+      subtitle = Just "Blink"
+  layer <- actionDemoLayer subtitle code 
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
-        var action2 = cc.FadeOut.create(1.0);
-        var action2Back = action2.reverse();
+  centerSprites sprites 2
+  setOpacity (_tamara sprites) 0
 
-        this._tamara.runAction(cc.Sequence.create(action1, action1Back));
-        this._kathia.runAction(cc.Sequence.create(action2, action2Back));
+  let action1 = FadeIn 1.0
+      action1Back = Reverse action1
+      action2 = FadeOut 1.0
+      action2Back = Reverse action2
 
+  runAction (_tamara sprites) $ Sequence [action1, action1Back]
+  runAction (_kathia sprites) $ Sequence [action2, action2Back]
 
-    },
-    subtitle:function () {
-        return "FadeIn / FadeOut";
-    }
-});
+{-
 //------------------------------------------------------------------
 //
 // ActionTint
