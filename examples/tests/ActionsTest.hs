@@ -188,8 +188,8 @@ actionSkewRotateScaleCase = TestCase actionSkewCase actionSkewRotateScaleScene a
 
 actionSkewRotateScaleScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just Nothing
-      subtitle = Just "Skew + Rotate + Scale";
+  let code = Nothing
+      subtitle = Just "Skew + Rotate + Scale"
   layer <- actionDemoLayer subtitle code
   addChild_ scene layer
 
@@ -201,18 +201,18 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
 
   let markrside = 10.0
   uL <- createLayerColor (Color4b 255 0 0 255)
-  addChild box uL
+  addChild_ box uL
   setContentSize uL (markrside,markrside)
   setPosition uL (0.0, (snd boxSize) - markrside)
   setAnchorPoint uL (0.0, 0.0)
 
   uR <- createLayerColor (Color4b 0 0 255 255)
-  addChild box uR
+  addChild_ box uR
   setContentSize uR (markrside,markrside)
-  setPosition uR ((fst boxSize) markrside, (snd boxSize) - markrside)
+  setPosition uR ((fst boxSize) + markrside, (snd boxSize) - markrside)
   setAnchorPoint uL (0.0, 0.0)
 
-  addChild layer box
+  addChild_ layer box
   
   let actionTo = SkewTo 2.0 (0.0, 2.0)
       rotateTo = RotateTo 2.0 61.0
