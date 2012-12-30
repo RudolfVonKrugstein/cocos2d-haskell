@@ -184,7 +184,7 @@ actionSkewScene = createScene $ \scene -> do
   runAction (_grossini sprites) (Sequence [actionBy, Reverse actionBy])
   runAction (_kathia sprites) (Sequence [actionBy2, Reverse actionBy2])
 
-actionSkewRotateScaleCase = TestCase actionSkewCase actionSkewRotateScaleScene actionManualCase "ActionsTest"
+actionSkewRotateScaleCase = TestCase actionSkewCase actionSkewRotateScaleScene actionRotateCase "ActionsTest"
 
 actionSkewRotateScaleScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
@@ -225,157 +225,143 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
   runAction box (Sequence [rotateTo, rotateToBack])
   runAction box (Sequence [actionScaleTo, actionScaleToBack])
 
-{-
-//------------------------------------------------------------------
-//
-//	ActionRotate
-//
-//------------------------------------------------------------------
-var ActionRotate = ActionsDemo.extend({
+------------------------------------------------------------------
+--	ActionRotate
+------------------------------------------------------------------
 
-    _code:"a = cc.RotateBy.create( time, degrees );\n" +
-            "a = cc.RotateTo.create( time, degrees );",
+actionRotateCase = TestCase actionSkewRotateScaleCase actionRotateScene actionJumpCase "ActionsTest"
 
-    onEnter:function () {
-        this._super();
-        this.centerSprites(3);
-        var actionTo = cc.RotateTo.create(2, 45);
-        var actionTo2 = cc.RotateTo.create(2, -45);
-        var actionTo0 = cc.RotateTo.create(2, 0);
-        this._tamara.runAction(cc.Sequence.create(actionTo, actionTo0));
+actionRotateScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just "a = cc.RotateBy.create( time, degrees );\na = cc.RotateTo.create( time, degrees );"
+      subtitle = Just "RotateTo / RotateBy"
+  layer <- actionDemoLayer subtitle code 
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
-        var actionBy = cc.RotateBy.create(2, 360);
-        var actionByBack = actionBy.reverse();
-        this._grossini.runAction(cc.Sequence.create(actionBy, actionByBack));
+  centerSprites sprites 3
 
-        this._kathia.runAction(cc.Sequence.create(actionTo2, actionTo0.copy()));
+  let actionTo = RotateTo 2.0 45.0
+      actionTo2 = RotateTo 2.0 (-45.0)
+      actionTo0 = RotateTo 2.0 0.0
+  runAction (_tamara sprites) (Sequence [actionTo, actionTo0])
+  let actionBy = RotateBy 2.0 360.0
+      actionByBack = Reverse actionBy
+  runAction (_grossini sprites) (Sequence [actionBy, actionByBack])
 
-    },
-    subtitle:function () {
-        return "RotateTo / RotateBy";
-    }
-});
+  runAction (_kathia sprites) (Sequence [actionTo2, actionTo0])
 
+------------------------------------------------------------------
+-- ActionJump
+------------------------------------------------------------------
 
-//------------------------------------------------------------------
-//
-// ActionJump
-//
-//------------------------------------------------------------------
-var ActionJump = ActionsDemo.extend({
-    _code: "a = cc.JumpBy.create( time, point, height, #_of_jumps );\n" +
-           "a = cc.JumpTo.create( time, point, height, #_of_jumps );",
+actionJumpCase = TestCase actionRotateCase actionJumpScene undefined "ActionsTest"
 
-    onEnter:function () {
-        this._super();
-        this.centerSprites(3);
+actionJumpScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Just "a = cc.JumpBy.create( time, point, height, #_of_jumps );\na = cc.JumpTo.create( time, point, height, #_of_jumps );"
+      subtitle = Just "JumpTo / JumpBy"
+  layer <- actionDemoLayer subtitle code 
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
+  centerSprites sprites 3
+  let actionTo = JumpTo 2.0 (300.0, 300.0) 50.0 4
+      actionBy = JumpBy 2.0 (300.0, 0.0) 50.0 4
+      actionUp = JumpBy 2.0 (0.0, 0.0) 80.0 4
+      actionByBack = Reverse actionBy
 
-        var actionTo = cc.JumpTo.create(2, cc.p(300, 300), 50, 4);
-        var actionBy = cc.JumpBy.create(2, cc.p(300, 0), 50, 4);
-        var actionUp = cc.JumpBy.create(2, cc.p(0, 0), 80, 4);
-        var actionByBack = actionBy.reverse();
+  runAction (_tamara sprites) actionTo
+  runAction (_grossini sprites) (Sequence [actionBy,actionByBack])
+  runAction (_kathia sprites)   (RepeatForever actionUp)
 
-        this._tamara.runAction(actionTo);
-        this._grossini.runAction(cc.Sequence.create(actionBy, actionByBack));
-        this._kathia.runAction(cc.RepeatForever.create(actionUp));
+------------------------------------------------------------------
+-- ActionBezier
+------------------------------------------------------------------
+actionBezierCase = TestCase actionJumpCase actionBezierScene undefined "ActionsTest"
 
-    },
-    subtitle:function () {
-        return "JumpTo / JumpBy";
-    }
-});
-//------------------------------------------------------------------
-//
-// ActionBezier
-//
-//------------------------------------------------------------------
-var ActionBezier = ActionsDemo.extend({
-    onEnter:function () {
-        this._super();
-        var s = director.getWinSize();
+actionBezierScene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Nothing
+      subtitle = Just "BezierBy / BezierTo"
+  layer <- actionDemoLayer subtitle code 
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
-        //
-        // startPosition can be any coordinate, but since the movement
-        // is relative to the Bezier curve, make it (0,0)
-        //
+  -- startPosition can be any coordinate, but since the movement
+  -- is relative to the Bezier curve, make it (0,0)
+  centerSprites sprites 3
 
-        this.centerSprites(3);
+  -- sprite 1
 
-        // sprite 1
+  -- 3 and only 3 control points should be used for Bezier actions.
+  let controlPoints = (
+		  (0.0, winHeight/2.0),
+		  (300.0, -winHeight/2.0),
+		  (300.0, 100.0)
+		  )
 
-        // 3 and only 3 control points should be used for Bezier actions.
-        var controlPoints = [ cc.p(0, s.height / 2),
-                                cc.p(300, -s.height / 2),
-                                cc.p(300, 100) ];
+      bezierForward = BezierBy 3.0 controlPoints
+      rep = RepeatForever $ Sequence [bezierForward, Reverse $ bezierForward]
 
-        var bezierForward = cc.BezierBy.create(3, controlPoints);
-        var rep = cc.RepeatForever.create(cc.Sequence.create(bezierForward, bezierForward.reverse()));
+  -- sprite 2
+  setPosition (_tamara sprites) (80.0, 160.0)
 
-        // sprite 2
-        this._tamara.setPosition(80, 160);
+  -- 3 and only 3 control points should be used for Bezier actions.
+  let controlPoints2 = (
+		  (100.0, winHeight / 2.0),
+		  (200.0, -winHeight / 2.0),
+		  (240.0, 160.0)
+		  )
+      bezierTo1 = BezierTo 2.0 controlPoints2
 
-        // 3 and only 3 control points should be used for Bezier actions.
-        var controlPoints2 = [ cc.p(100, s.height / 2),
-                                cc.p(200, -s.height / 2),
-                                cc.p(240, 160) ];
-        var bezierTo1 = cc.BezierTo.create(2, controlPoints2);
+  -- // sprite 3
+      controlPoints3 = controlPoints2
+  setPosition (_kathia sprites) (400.0, 160.0)
+  let bezierTo2 = BezierTo 2.0 controlPoints3
 
-        // // sprite 3
-        var controlPoints3 = controlPoints2.slice();
-        this._kathia.setPosition(400, 160);
-        var bezierTo2 = cc.BezierTo.create(2, controlPoints3);
+  runAction (_grossini sprites) rep
+  runAction (_tamara sprites) bezierTo1
+  runAction (_kathia sprites) bezierTo2
 
-        this._grossini.runAction(rep);
-        this._tamara.runAction(bezierTo1);
-        this._kathia.runAction(bezierTo2);
+------------------------------------------------------------------
+-- Issue1008
+--------------------------------------------------------------------
+actionIssue1008Case = TestCase actionBezierCase actionIssue1008Scene undefined "Issue 1008"
 
-    },
-    subtitle:function () {
-        return "BezierBy / BezierTo";
-    }
-});
-//------------------------------------------------------------------
-//
-// Issue1008
-//
-//------------------------------------------------------------------
-var Issue1008 = ActionsDemo.extend({
-    onEnter:function () {
-        this._super();
+actionIssue1008Scene = createScene $ \scene -> do
+  (winWidth, winHeight) <- getWinSize
+  let code = Nothing
+      subtitle = Just"BezierTo + Repeat. See console";
+  layer <- actionDemoLayer subtitle code 
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
 
-        this.centerSprites(1);
+  centerSprites sprites 1
 
-        // sprite 1
+  -- sprite 1
+  setPosition (_grossini sprites) (428.0,279.0)
 
-        this._grossini.setPosition(428,279);
+  -- 3 and only 3 control points should be used for Bezier actions.
+  let controlPoints1 = ((428.0,279.0), (100.0,100.0), (100.0,100.0))
+      controlPoints2 = ((100.0,100.0), (428.0,279.0), (428.0,279.0))
 
-        // 3 and only 3 control points should be used for Bezier actions.
-        var controlPoints1 = [ cc.p(428,279), cc.p(100,100), cc.p(100,100)];
-        var controlPoints2 = [ cc.p(100,100), cc.p(428,279), cc.p(428,279)];
+      bz1 = BezierTo 3.0 controlPoints1
+      bz2 = BezierTo 3.0 controlPoints2
+      trace = CallFunc (onTrace $ _grossini sprites)
 
-        var bz1 = cc.BezierTo.create(3, controlPoints1);
-        var bz2 = cc.BezierTo.create(3, controlPoints2);
-        var trace = cc.CallFunc.create(this.onTrace, this);
+      rep = RepeatForever $ Sequence [bz1, bz2, trace]
 
-        var rep = cc.RepeatForever.create(cc.Sequence.create(bz1, bz2, trace));
+  runAction (_grossini sprites) rep
 
-        this._grossini.runAction(rep);
-
-    },
-    onTrace:function (sender){
-        var pos = sender.getPosition();
-        cc.log("Position x: " + pos.x + ' y:' + pos.y);
-        if( pos.x != 428 || pos.y != 279)
-            cc.log("Error: Issue 1008 is still open");
-    },
-    title:function () {
-        return "Issue 1008";
-    },
-    subtitle:function () {
-        return "BezierTo + Repeat. See console";
-    }
-});
-//------------------------------------------------------------------
+onTrace :: Sprite -> IO ()
+onTrace sprite = do
+  (x,y) <- getPosition sprite
+  logOut $ "Position x:" ++ (show x) ++ " y:" ++ (show y)
+  if x /= 428.0 || y /= 279.0 then
+    logOut "Error: Issue 1008 is still open"
+  else
+    return ()
+{-//------------------------------------------------------------------
 //
 // ActionBlink
 //
