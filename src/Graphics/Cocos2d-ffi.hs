@@ -44,6 +44,8 @@ data Color4b = Color4b Word8 Word8 Word8 Word8
 -- Start cococs2d app
 foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
 
+foreign import jscall "cc.log(%1)" logOut :: String -> IO ()
+
 --foreign import jscall "cc.Director.getInstance()" getDirectorInstance :: IO Director
 
 foreign import jscall "cc.Director.getInstance().setDisplayStats(%1)" setDisplayStats :: Bool -> IO ()
