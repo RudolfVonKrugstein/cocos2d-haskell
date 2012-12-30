@@ -1,6 +1,7 @@
 module Graphics.Cocos2d.Animation where
 
-
+import Haste
+import Haste.Prim
 
 data Animation = ImageFileAnimation [String] Double Int Bool -- Animation with list of image files, number of loops and "restore original frame"
                | CacheAnimation String                       -- Animation from animation cache
@@ -10,15 +11,14 @@ data JSAnimationType
 type JSAnimation = Ptr JSAnimationType
 
 toJSAnimation :: Animation -> IO JSAnimation
-toJSAnimation
-  | ImageFileAnimation names dpu loop rof = do
-    a <- createJSAnimation
-    mapM_ (addAnimationSpriteFrameWithFile a) names
-    animationSetDelayPerUnit a dpu
-    animationSetLoops a loop
-    animationSetRestoreOriginalFrame a rof
-    return a
-  | CacheAnimation name = jsAnimationGetFromCache name
+toJSAnimation (ImageFileAnimation names dpu loop rof) = do
+      a <- createJSAnimation
+      mapM_ (addAnimationSpriteFrameWithFile a) names
+      animationSetDelayPerUnit a dpu
+      animationSetLoops a loop
+      animationSetRestoreOriginalFrame a rof
+      return a
+toJSAnimation (CacheAnimation name) = jSAnimationGetFromCache name
     
     
 
