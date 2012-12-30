@@ -79,8 +79,8 @@ addCode layer code = do
   addChild layer labelBG 9
 
 -- Layer used for action demo
-actionDemoLayer :: (Maybe String) -> (Maybe String) -> IO Layer
-actionDemoLayer subtitle code = do
+createActionDemoLayer :: (Maybe String) -> (Maybe String) -> IO Layer
+createActionDemoLayer subtitle code = do
   l <- createLayerGradient (Color4b 0 0 0 255) (Color4b 98 99 117 255)
   case subtitle of
     Just s -> addSubtitle l s
@@ -90,20 +90,22 @@ actionDemoLayer subtitle code = do
     _      -> return ()
   return l
 
+actionDemoScene :: (Maybe String) -> (Maybe String) -> (Sprites -> IO ()) -> IO Scene
+actionDemoScene subtitle code run = createScene $ \scene -> do
+  layer <- createActionDemoLayer subtitle code
+  sprites <- loadAndAddSprites layer
+  addChild_ scene layer
+  run sprites
+   
+
 ------------------------------------------------------------------
 -- ActionManual
 ------------------------------------------------------------------
 
 actionManualCase = TestCase actionMoveCase actionManualScene actionMoveCase "ActionsTest"
 
-actionManualScene = createScene $ \scene -> do
+actionManualScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "sprite.setPosition( 10,20 );\nsprite.setRotation( 90 );\nsprite.setScale( 2 );"
-      subtitle = Just "Manual Transformation"
-  layer <- actionDemoLayer subtitle code
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
-
   setScale (_tamara sprites) (2.5, -1.0)
   setPosition (_tamara sprites) (100.0, 70.0)
   setOpacity (_tamara sprites) 128.0
@@ -114,19 +116,17 @@ actionManualScene = createScene $ \scene -> do
 
   setPosition (_kathia sprites) (winWidth - 100.0, winHeight/2.0)
   setColor (_kathia sprites) (Color4b 0 0 255 255)
+  where
+    code = Just "sprite.setPosition( 10,20 );\nsprite.setRotation( 90 );\nsprite.setScale( 2 );"
+    subtitle = Just "Manual Transformation"
 
 ------------------------------------------------------------------
 --	ActionMove
 ------------------------------------------------------------------
 actionMoveCase = TestCase actionManualCase actionMoveScene actionManualCase "ActionsTest"
 
-actionMoveScene = createScene $ \scene -> do
+actionMoveScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.MoveBy.create( time, cc.p(x,y) );\na = cc.MoveTo.create( time, cc.p(x,y) );"
-      subtitle = Just "MoveTo / MoveBy";
-  layer <- actionDemoLayer subtitle code
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 3 
   
@@ -135,6 +135,9 @@ actionMoveScene = createScene $ \scene -> do
   runAction (_tamara sprites) moveTo
   runAction (_grossini sprites) (Sequence [moveBy, Reverse moveBy])
   runAction (_kathia sprites) (MoveTo 1.0 (40.0,40.0))
+  where
+    code = Just "a = cc.MoveBy.create( time, cc.p(x,y) );\na = cc.MoveTo.create( time, cc.p(x,y) );"
+    subtitle = Just "MoveTo / MoveBy";
 
 ------------------------------------------------------------------
 -- ActionScale
@@ -142,13 +145,8 @@ actionMoveScene = createScene $ \scene -> do
 
 actionScaleCase = TestCase actionMoveCase actionScaleScene actionSkewCase "ActionsTest"
 
-actionScaleScene = createScene $ \scene -> do
+actionScaleScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.ScaleBy.create( time, scale );\na = cc.ScaleTo.create( time, scaleX, scaleY );"
-      subtitle = Just "ScaleTo / ScaleBy"
-  layer <- actionDemoLayer subtitle code
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 3
 
@@ -159,19 +157,17 @@ actionScaleScene = createScene $ \scene -> do
   runAction (_tamara sprites) actionTo
   runAction (_kathia sprites) (Sequence [actionBy2, Reverse actionBy2])
   runAction (_grossini sprites) (Sequence [actionBy, Reverse actionBy])
+  where
+   code = Just "a = cc.ScaleBy.create( time, scale );\na = cc.ScaleTo.create( time, scaleX, scaleY );"
+   subtitle = Just "ScaleTo / ScaleBy"
 
 ------------------------------------------------------------------
 --	ActionSkew
 ------------------------------------------------------------------
 actionSkewCase = TestCase actionScaleCase actionSkewScene actionSkewRotateScaleCase "ActionsTest"
 
-actionSkewScene = createScene $ \scene -> do
+actionSkewScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.SkewBy.create( time, skew );\na = cc.SkewTo.create( time, skewX, skewY );"
-      subtitle = Just "SkewTo / SkewBy"
-  layer <- actionDemoLayer subtitle code
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 3
 
@@ -184,13 +180,15 @@ actionSkewScene = createScene $ \scene -> do
   runAction (_grossini sprites) (Sequence [actionBy, Reverse actionBy])
   runAction (_kathia sprites) (Sequence [actionBy2, Reverse actionBy2])
 
+  where code = Just "a = cc.SkewBy.create( time, skew );\na = cc.SkewTo.create( time, skewX, skewY );"
+        subtitle = Just "SkewTo / SkewBy"
+
 actionSkewRotateScaleCase = TestCase actionSkewCase actionSkewRotateScaleScene actionRotateCase "ActionsTest"
 
 actionSkewRotateScaleScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Nothing
-      subtitle = Just "Skew + Rotate + Scale"
-  layer <- actionDemoLayer subtitle code
+  layer <- createActionDemoLayer subtitle code
+  sprites <- loadAndAddSprites layer
   addChild_ scene layer
 
   let boxSize = (100.0, 100.0)
@@ -225,19 +223,17 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
   runAction box (Sequence [rotateTo, rotateToBack])
   runAction box (Sequence [actionScaleTo, actionScaleToBack])
 
+  where code = Nothing
+        subtitle = Just "Skew + Rotate + Scale"
+
 ------------------------------------------------------------------
 --	ActionRotate
 ------------------------------------------------------------------
 
 actionRotateCase = TestCase actionSkewRotateScaleCase actionRotateScene actionJumpCase "ActionsTest"
 
-actionRotateScene = createScene $ \scene -> do
+actionRotateScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.RotateBy.create( time, degrees );\na = cc.RotateTo.create( time, degrees );"
-      subtitle = Just "RotateTo / RotateBy"
-  layer <- actionDemoLayer subtitle code 
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 3
 
@@ -250,6 +246,8 @@ actionRotateScene = createScene $ \scene -> do
   runAction (_grossini sprites) (Sequence [actionBy, actionByBack])
 
   runAction (_kathia sprites) (Sequence [actionTo2, actionTo0])
+  where code = Just "a = cc.RotateBy.create( time, degrees );\na = cc.RotateTo.create( time, degrees );"
+        subtitle = Just "RotateTo / RotateBy"
 
 ------------------------------------------------------------------
 -- ActionJump
@@ -257,13 +255,9 @@ actionRotateScene = createScene $ \scene -> do
 
 actionJumpCase = TestCase actionRotateCase actionJumpScene undefined "ActionsTest"
 
-actionJumpScene = createScene $ \scene -> do
+actionJumpScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.JumpBy.create( time, point, height, #_of_jumps );\na = cc.JumpTo.create( time, point, height, #_of_jumps );"
-      subtitle = Just "JumpTo / JumpBy"
-  layer <- actionDemoLayer subtitle code 
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
+
   centerSprites sprites 3
   let actionTo = JumpTo 2.0 (300.0, 300.0) 50.0 4
       actionBy = JumpBy 2.0 (300.0, 0.0) 50.0 4
@@ -273,19 +267,16 @@ actionJumpScene = createScene $ \scene -> do
   runAction (_tamara sprites) actionTo
   runAction (_grossini sprites) (Sequence [actionBy,actionByBack])
   runAction (_kathia sprites)   (RepeatForever actionUp)
+  where code = Just "a = cc.JumpBy.create( time, point, height, #_of_jumps );\na = cc.JumpTo.create( time, point, height, #_of_jumps );"
+        subtitle = Just "JumpTo / JumpBy"
 
 ------------------------------------------------------------------
 -- ActionBezier
 ------------------------------------------------------------------
 actionBezierCase = TestCase actionJumpCase actionBezierScene undefined "ActionsTest"
 
-actionBezierScene = createScene $ \scene -> do
+actionBezierScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Nothing
-      subtitle = Just "BezierBy / BezierTo"
-  layer <- actionDemoLayer subtitle code 
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   -- startPosition can be any coordinate, but since the movement
   -- is relative to the Bezier curve, make it (0,0)
@@ -322,19 +313,16 @@ actionBezierScene = createScene $ \scene -> do
   runAction (_grossini sprites) rep
   runAction (_tamara sprites) bezierTo1
   runAction (_kathia sprites) bezierTo2
+  where code = Nothing
+        subtitle = Just "BezierBy / BezierTo"
 
 ------------------------------------------------------------------
 -- Issue1008
 --------------------------------------------------------------------
 actionIssue1008Case = TestCase actionBezierCase actionIssue1008Scene actionBlinkCase "Issue 1008"
 
-actionIssue1008Scene = createScene $ \scene -> do
+actionIssue1008Scene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Nothing
-      subtitle = Just"BezierTo + Repeat. See console";
-  layer <- actionDemoLayer subtitle code 
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 1
 
@@ -352,6 +340,8 @@ actionIssue1008Scene = createScene $ \scene -> do
       rep = RepeatForever $ Sequence [bz1, bz2, trace]
 
   runAction (_grossini sprites) rep
+  where code = Nothing
+        subtitle = Just"BezierTo + Repeat. See console";
 
 onTrace :: Sprite -> IO ()
 onTrace sprite = do
@@ -366,13 +356,8 @@ onTrace sprite = do
 ------------------------------------------------------------------
 actionBlinkCase = TestCase actionBezierCase actionBlinkScene undefined "ActionsTest"
 
-actionBlinkScene = createScene $ \scene -> do
+actionBlinkScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.Blink.create( time, #_of_blinks );"
-      subtitle = Just "Blink"
-  layer <- actionDemoLayer subtitle code 
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 3
 
@@ -381,18 +366,15 @@ actionBlinkScene = createScene $ \scene -> do
 
   runAction (_tamara sprites) action1
   runAction (_kathia sprites) action2
+  where code = Just "a = cc.Blink.create( time, #_of_blinks );"
+        subtitle = Just "Blink"
 ------------------------------------------------------------------
 -- ActionFade
 ------------------------------------------------------------------
 actionFadeCase = TestCase actionBlinkCase actionFadeScene undefined "ActionsTest"
 
-actionFadeScene = createScene $ \scene -> do
+actionFadeScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  let code = Just "a = cc.FadeIn.create( time );\na = cc.FadeOut.create( time );"
-      subtitle = Just "Blink"
-  layer <- actionDemoLayer subtitle code 
-  sprites <- loadAndAddSprites layer
-  addChild_ scene layer
 
   centerSprites sprites 2
   setOpacity (_tamara sprites) 0
@@ -404,6 +386,8 @@ actionFadeScene = createScene $ \scene -> do
 
   runAction (_tamara sprites) $ Sequence [action1, action1Back]
   runAction (_kathia sprites) $ Sequence [action2, action2Back]
+  where code = Just "a = cc.FadeIn.create( time );\na = cc.FadeOut.create( time );"
+        subtitle = Just "Blink"
 
 {-
 //------------------------------------------------------------------
