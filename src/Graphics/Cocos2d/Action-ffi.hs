@@ -3,6 +3,7 @@ module Graphics.Cocos2d.Action where
 import Haste
 import Haste.Prim
 import Graphics.Cocos2d
+import Graphics.Cocos2d.Animation
 import Data.Word
 
 -- Actions
@@ -25,6 +26,9 @@ data Action = Sequence [Action]
             | DelayTime Double
             | FadeIn Double
             | FadeOut Double
+            | AnimationAction Animation
+            | Place (Double,Double)
+            | Show
             | CallFunc (IO ())
             | TagAction Int Action
             | Reverse Action
@@ -59,6 +63,11 @@ toJSAction (TintBy t (DeltaColor4b r g b a)) = tintByAction t r g b a
 toJSAction (DelayTime t)       = delayTimeAction t
 toJSAction (FadeIn t)          = fadeInAction t
 toJSAction (FadeOut t)         = fadeOutAction t
+toJSAction (AnimationAction a) = do
+  anim <- toJSAnimation a
+  animationAction anim
+toJSAction (Place (x,y))      = placeAction x y
+toJSAction Show                = showAction
 toJSAction (Blink t n)         = blinkAction t n
 toJSAction (CallFunc f)        = callFuncAction f
 toJSAction (TagAction id a)    = do
@@ -88,6 +97,9 @@ foreign import jscall "cc.TintBy.create(%1,%2,%3,%4,%5)" tintByAction :: Double 
 foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
 foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
 foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
+foreign import jscall "cc.Animate.create(%1)"            animationAction :: JSAnimation -> IO JSAction
+foreign import jscall "cc.Place.create(cc.p(%1,%2))"     placeAction :: Double -> Double -> IO JSAction
+foreign import jscall "cc.Show.crete()"                  showAction :: IO JSAction
 foreign import jscall "cc.Blink.create(%1,%2)" blinkAction :: Double -> Int -> IO JSAction
 foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
 foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
