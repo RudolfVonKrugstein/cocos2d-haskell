@@ -1,4 +1,4 @@
-all: TouchDelegate.hs TouchDelegate.js Scene.hs Scene.js Action.hs Action.js
+all: TouchDelegate.hs TouchDelegate.js Scene.hs Scene.js Action.hs Action.js Animation.hs Animation.js
 
 TouchDelegate.hs: TouchDelegate-ffi.hs
 	haste-ffi-parser TouchDelegate-ffi.hs TouchDelegate
@@ -17,3 +17,9 @@ Action.hs: Action-ffi.hs
 
 Action.js: Action-ffi.hs
 	haste-ffi-parser Action-ffi.hs Action
+
+Animation.hs: Animation-ffi.hs
+	haste-ffi-parser Animation-ffi.hs Animation
+
+Animation.js: Animation-ffi.hs
+	haste-ffi-parser Animation-ffi.hs Animation
