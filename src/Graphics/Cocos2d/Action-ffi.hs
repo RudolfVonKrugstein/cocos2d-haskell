@@ -17,6 +17,7 @@ data Action = Sequence [Action]
             | JumpBy Double (Double,Double) Double Int
             | BezierTo Double ((Double,Double), (Double,Double), (Double,Double))
             | BezierBy Double ((Double,Double), (Double,Double), (Double,Double))
+            | Blink Double Int
             | DelayTime Double
             | FadeIn Double
             | FadeOut Double
@@ -52,6 +53,7 @@ toJSAction (BezierBy t ((x1,y1),(x2,y2),(x3,y3))) = bezierByAction t x1 y1 x2 y2
 toJSAction (DelayTime t)       = delayTimeAction t
 toJSAction (FadeIn t)          = fadeInAction t
 toJSAction (FadeOut t)         = fadeOutAction t
+toJSAction (Blink t n)         = blinkAction t n
 toJSAction (CallFunc f)        = callFuncAction f
 toJSAction (TagAction id a)    = do
   a1 <- toJSAction a
@@ -78,6 +80,7 @@ foreign import jscall "cc.BezierBy.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7
 foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
 foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
 foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
+foreign import jscall "cc.Blink.create(%1,%2)" blinkAction :: Double -> Int -> IO JSAction
 foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
 foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
 foreign import jscall "%1.reverse()"                     reverseAction :: JSAction -> IO JSAction
