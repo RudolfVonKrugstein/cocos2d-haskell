@@ -53,7 +53,9 @@ foreign import jscall "cc.Director.getInstance().setAnimationInterval(%1)" setAn
 foreign import jscall "new cc.Layer()" createLayer :: IO Layer
 
 foreign import jscall "cc.LayerGradient.create(cc.c4b(%1,%2,%3,%4), cc.c4b(%5,%6,%7,%8))" createLayerGradientJS :: Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> IO Layer
+foreign import jscall "cc.LayerColor.create(cc.c4b(%1,%2,%3,%4))" createLayerColorJS :: Word8 -> Word8 -> Word8 -> Word8 -> IO Layer
 createLayerGradient (Color4b a1 a2 a3 a4) (Color4b b1 b2 b3 b4) = createLayerGradientJS a1 a2 a3 a4 b1 b2 b3 b4
+createLayerColor (Color4b r g b a) = createLayerColorJS r g b a
 
 foreign import jscall "%1.width" sizeWidth :: Size -> Double
 foreign import jscall "%1.height" sizeHeight :: Size -> Double
