@@ -8,6 +8,7 @@ import Data.Word
 
 -- Actions
 data Action = Sequence [Action]
+            | Spawn [Action]
             | RotateTo Double Double
             | RotateBy Double Double
             | ScaleTo Double (Double,Double)
@@ -29,10 +30,21 @@ data Action = Sequence [Action]
             | AnimationAction Animation
             | Place (Double,Double)
             | Show
+            | Hide
+            | ToggleVisibility
+            | OrbitCamera Double Double Double Double Double Double Double
+            | Follow Node Double Double Double Double
+            | CardinalSplineTo Double [(Double,Double)] Double
+            | CardinalSplineBy Double [(Double,Double)] Double
+            | CatmullRomTo Double [(Double,Double)]
+            | CatmullRomBy Double [(Double,Double)]
+            | Targeted Node Action
             | CallFunc (IO ())
             | TagAction Int Action
             | Reverse Action
+            | Repeat Action Int
             | RepeatForever Action
+
 
 data JSActionType
 type JSAction = Ptr JSActionType
@@ -46,6 +58,11 @@ toJSAction (Sequence (a:b:as)) = do
   a2 <- toJSAction (Sequence (b:as))
   sequenceAction a1 a2
 toJSAction (Sequence [a])      = toJSAction a
+toJSAction (Spawn (a:b:as)) = do
+  a1 <- toJSAction a
+  a2 <- toJSAction (Spawn (b:as))
+  spawnAction a1 a2
+toJSAction (Spawn [a]) = toJSAction a
 toJSAction (RotateTo t r)      = rotateToAction t r
 toJSAction (RotateBy t r)      = rotateByAction t r
 toJSAction (ScaleTo t (x,y))   = scaleToAction t x y
@@ -68,6 +85,8 @@ toJSAction (AnimationAction a) = do
   animationAction anim
 toJSAction (Place (x,y))      = placeAction x y
 toJSAction Show                = showAction
+toJSAction Hide                = hideAction
+toJSAction ToggleVisibility    = toggleVisibilityAction
 toJSAction (Blink t n)         = blinkAction t n
 toJSAction (CallFunc f)        = callFuncAction f
 toJSAction (TagAction id a)    = do
@@ -77,9 +96,31 @@ toJSAction (TagAction id a)    = do
 toJSAction (Reverse a) = do
   a1 <- toJSAction a
   reverseAction a1
+toJSAction (Repeat a n) = do
+  a1 <- toJSAction a
+  repeatAction a1 n
 toJSAction (RepeatForever a) = toJSAction a >>= repeatForeverAction
+toJSAction (OrbitCamera t radius deltaRadius angleZ deltaAngleZ angleX deltaAngleX)
+  = orbitCameraAction t radius deltaRadius angleZ deltaAngleZ angleX deltaAngleX
+toJSAction (Follow n x y w h) = followAction n x y w h
+toJSAction (CardinalSplineTo t ps ten) = do
+  arr <- pointArrayFromList ps
+  cardinalSplineToAction t arr ten
+toJSAction (CardinalSplineBy t ps ten) = do
+  arr <- pointArrayFromList ps
+  cardinalSplineByAction t arr ten
+toJSAction (CatmullRomTo t ps) = do
+  arr <- pointArrayFromList ps
+  catmullRomToAction t arr
+toJSAction (CatmullRomBy t ps) = do
+  arr <- pointArrayFromList ps
+  catmullRomByAction t arr
+toJSAction (Targeted n a) = do
+  a1 <- toJSAction a
+  targetedAction n a1
 
 foreign import jscall "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> IO JSAction
+foreign import jscall "cc.Spawn.create(%1,%2)"           spawnAction :: JSAction -> JSAction -> IO JSAction
 foreign import jscall "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> IO JSAction
 foreign import jscall "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> IO JSAction
 foreign import jscall "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> IO JSAction
@@ -99,12 +140,22 @@ foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double 
 foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
 foreign import jscall "cc.Animate.create(%1)"            animationAction :: JSAnimation -> IO JSAction
 foreign import jscall "cc.Place.create(cc.p(%1,%2))"     placeAction :: Double -> Double -> IO JSAction
-foreign import jscall "cc.Show.crete()"                  showAction :: IO JSAction
+foreign import jscall "cc.Show.create()"                  showAction :: IO JSAction
+foreign import jscall "cc.Hide.create()"                  hideAction :: IO JSAction
+foreign import jscall "cc.ToggleVisibility.create()"      toggleVisibilityAction :: IO JSAction
 foreign import jscall "cc.Blink.create(%1,%2)" blinkAction :: Double -> Int -> IO JSAction
 foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
 foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
 foreign import jscall "%1.reverse()"                     reverseAction :: JSAction -> IO JSAction
+foreign import jscall "cc.Repeat.create(%1,%2)"          repeatAction :: JSAction -> Int -> IO JSAction
 foreign import jscall "cc.RepeatForever.create(%1)"      repeatForeverAction :: JSAction -> IO JSAction
+foreign import jscall "cc.OrbitCamera.create(%*)"        orbitCameraAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.Follow.create(%1,cc.rect(%*))" followAction :: Node -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.CardinalSplineTo.create(%*)" cardinalSplineToAction :: Double -> PointArray -> Double -> IO JSAction
+foreign import jscall "cc.CardinalSplineBy.create(%*)" cardinalSplineByAction :: Double -> PointArray -> Double -> IO JSAction
+foreign import jscall "cc.CatmullRomTo.create(%*)" catmullRomToAction :: Double -> PointArray -> IO JSAction
+foreign import jscall "cc.CatmullRomBy.create(%*)" catmullRomByAction :: Double -> PointArray -> IO JSAction
+foreign import jscall "cc.Targeted.create(%*)" targetedAction :: Node -> JSAction -> IO JSAction
 
 -- Operations on nodes
 addAction :: (NodeDerived a) => Action -> a -> Bool -> IO ()
@@ -127,3 +178,7 @@ foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO
 foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
 foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
 foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
+
+foreign import jscall "director.getActionManager().pauseAllRunningActions()" nodePauseAllRunningActions :: IO NodeSet
+pauseAllRunningActions :: IO [Node]
+pauseAllRunningActions = nodePauseAllRunningActions >>= nodeSetToNodeList
