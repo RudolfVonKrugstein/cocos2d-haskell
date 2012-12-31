@@ -9,7 +9,26 @@ import TestCase
 import Data.VectorSpace
 -- based on ActionsTest.js from cocos2d-html5
 
-actionsTestCase = actionManualCase
+actionsTestCase = testCaseFromList actionTests
+
+actionTests = [
+  (actionManualScene,"Action Test"),
+  (actionMoveScene,  "Action Test"),
+  (actionScaleScene, "Action Test"),
+  (actionSkewScene,  "Action Test"),
+  (actionSkewRotateScaleScene, "Action Test"),
+  (actionRotateScene, "Action Test"),
+  (actionJumpScene, "Action Test"),
+  (actionBezierScene, "Action Test"),
+  (actionIssue1008Scene, "Issue 1008"),
+  (actionBlinkScene, "Action Test"),
+  (actionFadeScene, "Action Test"),
+  (actionTintScene, "Action Test"),
+  (actionAnimateScene, "Action Test"),
+  (actionSequenceScene, "Action Test"),
+  (actionSequence2Scene, "Action Test"),
+  (actionCallFunc2Scene, "Action Test")
+  ]
 
 -- Sprites used all the time
 data Sprites = Sprites {
@@ -103,8 +122,6 @@ actionDemoScene subtitle code run = createScene $ \scene -> do
 -- ActionManual
 ------------------------------------------------------------------
 
-actionManualCase = TestCase actionMoveCase actionManualScene actionMoveCase "ActionsTest"
-
 actionManualScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
   setScale (_tamara sprites) (2.5, -1.0)
@@ -124,7 +141,6 @@ actionManualScene = actionDemoScene subtitle code $ \sprites -> do
 ------------------------------------------------------------------
 --	ActionMove
 ------------------------------------------------------------------
-actionMoveCase = TestCase actionManualCase actionMoveScene actionManualCase "ActionsTest"
 
 actionMoveScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
@@ -143,8 +159,6 @@ actionMoveScene = actionDemoScene subtitle code $ \sprites -> do
 ------------------------------------------------------------------
 -- ActionScale
 ------------------------------------------------------------------
-
-actionScaleCase = TestCase actionMoveCase actionScaleScene actionSkewCase "ActionsTest"
 
 actionScaleScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
@@ -165,7 +179,6 @@ actionScaleScene = actionDemoScene subtitle code $ \sprites -> do
 ------------------------------------------------------------------
 --	ActionSkew
 ------------------------------------------------------------------
-actionSkewCase = TestCase actionScaleCase actionSkewScene actionSkewRotateScaleCase "ActionsTest"
 
 actionSkewScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
@@ -183,8 +196,6 @@ actionSkewScene = actionDemoScene subtitle code $ \sprites -> do
 
   where code = Just "a = cc.SkewBy.create( time, skew );\na = cc.SkewTo.create( time, skewX, skewY );"
         subtitle = Just "SkewTo / SkewBy"
-
-actionSkewRotateScaleCase = TestCase actionSkewCase actionSkewRotateScaleScene actionRotateCase "ActionsTest"
 
 actionSkewRotateScaleScene = createScene $ \scene -> do
   (winWidth, winHeight) <- getWinSize
@@ -231,8 +242,6 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
 --	ActionRotate
 ------------------------------------------------------------------
 
-actionRotateCase = TestCase actionSkewRotateScaleCase actionRotateScene actionJumpCase "ActionsTest"
-
 actionRotateScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
 
@@ -254,8 +263,6 @@ actionRotateScene = actionDemoScene subtitle code $ \sprites -> do
 -- ActionJump
 ------------------------------------------------------------------
 
-actionJumpCase = TestCase actionRotateCase actionJumpScene undefined "ActionsTest"
-
 actionJumpScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
 
@@ -274,7 +281,6 @@ actionJumpScene = actionDemoScene subtitle code $ \sprites -> do
 ------------------------------------------------------------------
 -- ActionBezier
 ------------------------------------------------------------------
-actionBezierCase = TestCase actionJumpCase actionBezierScene undefined "ActionsTest"
 
 actionBezierScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
@@ -320,7 +326,6 @@ actionBezierScene = actionDemoScene subtitle code $ \sprites -> do
 ------------------------------------------------------------------
 -- Issue1008
 --------------------------------------------------------------------
-actionIssue1008Case = TestCase actionBezierCase actionIssue1008Scene actionBlinkCase "Issue 1008"
 
 actionIssue1008Scene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
@@ -355,7 +360,6 @@ onTrace sprite = do
 ------------------------------------------------------------------
 -- ActionBlink
 ------------------------------------------------------------------
-actionBlinkCase = TestCase actionBezierCase actionBlinkScene undefined "ActionsTest"
 
 actionBlinkScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
@@ -372,7 +376,6 @@ actionBlinkScene = actionDemoScene subtitle code $ \sprites -> do
 ------------------------------------------------------------------
 -- ActionFade
 ------------------------------------------------------------------
-actionFadeCase = TestCase actionBlinkCase actionFadeScene undefined "ActionsTest"
 
 actionFadeScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
