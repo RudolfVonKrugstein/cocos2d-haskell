@@ -38,7 +38,7 @@ data Action = Sequence [Action]
             | CardinalSplineBy Double [(Double,Double)] Double
             | CatmullRomTo Double [(Double,Double)]
             | CatmullRomBy Double [(Double,Double)]
-            | Targeted Node Action
+            | TargetedAction Node Action
             | CallFunc (IO ())
             | TagAction Int Action
             | Reverse Action
@@ -115,7 +115,7 @@ toJSAction (CatmullRomTo t ps) = do
 toJSAction (CatmullRomBy t ps) = do
   arr <- pointArrayFromList ps
   catmullRomByAction t arr
-toJSAction (Targeted n a) = do
+toJSAction (TargetedAction n a) = do
   a1 <- toJSAction a
   targetedAction n a1
 
@@ -155,7 +155,7 @@ foreign import jscall "cc.CardinalSplineTo.create(%*)" cardinalSplineToAction ::
 foreign import jscall "cc.CardinalSplineBy.create(%*)" cardinalSplineByAction :: Double -> PointArray -> Double -> IO JSAction
 foreign import jscall "cc.CatmullRomTo.create(%*)" catmullRomToAction :: Double -> PointArray -> IO JSAction
 foreign import jscall "cc.CatmullRomBy.create(%*)" catmullRomByAction :: Double -> PointArray -> IO JSAction
-foreign import jscall "cc.Targeted.create(%*)" targetedAction :: Node -> JSAction -> IO JSAction
+foreign import jscall "cc.TargetedAction.create(%*)" targetedAction :: Node -> JSAction -> IO JSAction
 
 -- Operations on nodes
 addAction :: (NodeDerived a) => Action -> a -> Bool -> IO ()

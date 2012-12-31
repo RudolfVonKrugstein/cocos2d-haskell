@@ -807,8 +807,8 @@ actionTargetedScene = actionDemoScene subtitle code $ \sprites -> do
       rot1 = RotateBy 1.0 360.0
       rot2 = rot1
      
-      t1 = Targeted (toNode . _kathia $ sprites) jump2
-      t2 = Targeted (toNode . _kathia $ sprites) rot2
+      t1 = TargetedAction (toNode . _kathia $ sprites) jump2
+      t2 = TargetedAction (toNode . _kathia $ sprites) rot2
 
       seq = Sequence [jump1, t1, rot1, t2]
       always = RepeatForever seq
@@ -826,7 +826,7 @@ actionTargetedCopyScene = actionDemoScene subtitle code $ \sprites -> do
   let jump1 = JumpBy 2.0 (0.0,0.0) 100.0 3
       jump2 = jump1
       
-      t1 = Targeted (toNode . _kathia $ sprites) jump2
+      t1 = TargetedAction (toNode . _kathia $ sprites) jump2
       t_copy = t1
 
       seq = Sequence [jump1, t_copy]
