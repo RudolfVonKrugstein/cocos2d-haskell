@@ -21,6 +21,8 @@ data SizeType
 type Size = Ptr SizeType
 data PointType
 type Point = Ptr PointType
+data PointArrayType
+type PointArray = Ptr PointArrayType
 data MenuItemImageType
 type MenuItemImage = Ptr MenuItemImageType
 data MenuItemLabelType
@@ -35,6 +37,8 @@ type LabelTTF = Ptr LabelTTFType
 --base classes
 data NodeType
 type Node = Ptr NodeType
+data NodeSetType
+type NodeSet = Ptr NodeSetType
 data MenuItemType
 type MenuItem = Ptr MenuItemType
 
@@ -77,6 +81,13 @@ foreign import jscall "cc.PointZero()" pointZeroJS :: IO Point
 pointZero :: IO (Double,Double)
 pointZero = pointToTuple <$> pointZeroJS
 
+foreign import jscall "new Array"            createPointArray :: IO PointArray
+foreign import jscall "%1.push(cc.p(%2,%3))" pushToPointArray :: PointArray -> Double -> Double -> IO ()
+pointArrayFromList :: [(Double,Double)] -> IO PointArray
+pointArrayFromList is = do
+  pa <- createPointArray
+  mapM_ (\(x,y) -> pushToPointArray pa x y) is
+  return pa
 
 foreign import jscall "cc.Director.getInstance().getWinSize()" getWinSizeJS :: IO Size
 
@@ -152,6 +163,9 @@ class NodeDerived a where
   resumeTarget :: a -> IO ()
   resumeTarget a = nodeResumeTarget (toNode a)
 
+  resumeTargets :: [a] -> IO ()
+  resumeTargets = mapM_ resumeTarget
+
   pauseTarget :: a -> IO ()
   pauseTarget a = nodePauseTarget (toNode a)
 
@@ -171,7 +185,7 @@ foreign import jscall "%1.setColor(cc.c4b(%*))" nodeSetColor :: Node -> Word8 ->
 foreign import jscall "%1.setOpacity(%2)" nodeSetOpacity :: Node -> Double -> IO ()
 foreign import jscall "%1.setRotation(%2)" nodeSetRotation :: Node -> Double -> IO ()
 foreign import jscall "%1.getContentSize()" nodeGetContentSize :: Node -> IO Size
-foreign import jscall "%1.setContentSize(cc.s(%2,%3))" nodeSetContentSize :: Node -> Double -> Double -> IO ()
+foreign import jscall "%1.setContentSize(cc.size(%2,%3))" nodeSetContentSize :: Node -> Double -> Double -> IO ()
 foreign import jscall "%1.schedule(function (a) {A(%2, [[1,a],0]);},%3)" nodeScheduleInterval :: Node -> IO () -> Double -> IO ()
 foreign import jscall "%1.scheduleOnce(function (a) {A(%2, [[1,a],0]);},%3)" nodeScheduleOnce :: Node -> IO () -> Double -> IO ()
 foreign import jscall "cc.Director.getInstance().getActionManager().resumeTarget(%1)" nodeResumeTarget :: Node -> IO ()
@@ -234,3 +248,11 @@ instance MenuItemDerived MenuItemLabel where
   toMenuItem = menuItemLabelToMenuItem
 foreign import ccall "returnSame" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
 
+-- array of nodes
+nodeSetToNodeList :: NodeSet -> IO [Node]
+nodeSetToNodeList set = do
+  num <- nodeSetSize set
+  mapM (\i -> nodeSetGetNthNode set i) [0..(num-1)]
+
+foreign import jscall "%1.length" nodeSetSize :: NodeSet -> IO Int
+foreign import jscall "%1[%2]" nodeSetGetNthNode :: NodeSet -> Int -> IO Node
