@@ -59,14 +59,28 @@ toList sprites = [_grossini sprites, _tamara sprites, _kathia sprites]
 
 -- centers an shows the requested number of sprites
 centerSprites :: Sprites -> Int -> IO ()
-centerSprites s n = do
-  let sprites = toList s
-      num = fromIntegral $ min (length sprites) n :: Double
-  -- hide all but the first n sprites
-  mapM_ (\s -> setVisible s False) (drop n sprites)
-  -- set the first nums position
+centerSprites s 0 = do
+  setVisible (_grossini s) False
+  setVisible (_kathia s) False
+  setVisible (_tamara s) False
+
+centerSprites s 1 = do
   (winWidth, winHeight) <- getWinSize
-  mapM_ (\(i,s) -> setPosition s (i * winWidth / (1.0 + num), winHeight /2.0)) $ zip [1.0..] (take n sprites)
+  setVisible (_kathia s) False
+  setVisible (_tamara s) False
+  setPosition (_grossini s) (winWidth / 2.0, winHeight / 2.0)
+
+centerSprites s 2 = do
+  (winWidth, winHeight) <- getWinSize
+  setVisible (_grossini s) False
+  setPosition (_kathia s) (winWidth / 3.0, winHeight / 2.0)
+  setPosition (_tamara s) (2.0 * winWidth / 3.0, winHeight / 2.0)
+
+centerSprites s 3 = do
+  (winWidth, winHeight) <- getWinSize
+  setPosition (_grossini s) (winWidth / 2.0, winHeight / 2.0)
+  setPosition (_kathia s) (winWidth / 4.0, winHeight / 2.0)
+  setPosition (_tamara s) (3.0 * winWidth / 4.0, winHeight / 2.0)
 
 -- Same but with left aligning
 alignSpritesLeft :: Sprites -> Int -> IO ()
@@ -164,7 +178,7 @@ actionMoveScene = actionDemoScene subtitle code $ \sprites -> do
 
   centerSprites sprites 3 
   
-  let moveTo = MoveTo 2.0 (winWidth - 400, winHeight - 40.0)
+  let moveTo = MoveTo 2.0 (winWidth - 40, winHeight - 40.0)
       moveBy = MoveBy 20 (80.0, 80.0)
   runAction (_tamara sprites) moveTo
   runAction (_grossini sprites) (Sequence [moveBy, Reverse moveBy])
