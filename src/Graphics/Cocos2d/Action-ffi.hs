@@ -179,6 +179,6 @@ foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1
 foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
 foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
 
-foreign import jscall "director.getActionManager().pauseAllRunningActions()" nodePauseAllRunningActions :: IO NodeSet
+foreign import jscall "cc.Director.getInstance().getActionManager().pauseAllRunningActions()" nodePauseAllRunningActions :: IO NodeSet
 pauseAllRunningActions :: IO [Node]
 pauseAllRunningActions = nodePauseAllRunningActions >>= nodeSetToNodeList
