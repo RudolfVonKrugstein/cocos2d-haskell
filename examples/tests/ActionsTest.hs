@@ -116,7 +116,7 @@ addSubtitle layer subtitle = do
   (winWidth, winHeight) <- getWinSize
   l <- createLabelTTF subtitle "Thonburi" 22
   addChild layer l 1
-  setPosition l (winWidth/2.0, winHeight-60.0)
+  setPosition l (winWidth/2.0, winHeight-70.0)
 
 addCode :: Layer -> String -> IO ()
 addCode layer code = do
@@ -179,7 +179,7 @@ actionMoveScene = actionDemoScene subtitle code $ \sprites -> do
   centerSprites sprites 3 
   
   let moveTo = MoveTo 2.0 (winWidth - 40, winHeight - 40.0)
-      moveBy = MoveBy 20 (80.0, 80.0)
+      moveBy = MoveBy 2.0 (80.0, 80.0)
   runAction (_tamara sprites) moveTo
   runAction (_grossini sprites) (Sequence [moveBy, Reverse moveBy])
   runAction (_kathia sprites) (MoveTo 1.0 (40.0,40.0))
@@ -233,6 +233,7 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
   layer <- createActionDemoLayer subtitle code
   sprites <- loadAndAddSprites layer
   addChild_ scene layer
+  centerSprites sprites 0
 
   let boxSize = (100.0, 100.0) :: (Double,Double)
   box <- createLayerColor (Color4b 255 255 0 255)
