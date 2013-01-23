@@ -10,6 +10,9 @@ module Graphics.Cocos2d
   , module Graphics.Cocos2d.Scene
   , module Graphics.Cocos2d.Layer
   , module Graphics.Cocos2d.Utils
+  , module Graphics.Cocos2d.Sprite
+  , module Graphics.Cocos2d.Label
+  , module Graphics.Cocos2d.Menu
 ) where
 
 import Graphics.Cocos2d.Action
@@ -18,6 +21,9 @@ import Graphics.Cocos2d.Node
 import Graphics.Cocos2d.Scene
 import Graphics.Cocos2d.Layer
 import Graphics.Cocos2d.Utils
+import Graphics.Cocos2d.Sprite
+import Graphics.Cocos2d.Label
+import Graphics.Cocos2d.Menu
 import Foreign.Ptr
 import Haste
 import Haste.Prim
