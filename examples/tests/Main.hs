@@ -1,7 +1,7 @@
 module Main where
 
 import Graphics.Cocos2d
-import Graphics.Cocos2d.TouchDelegate
+import Graphics.Cocos2d.Layer
 import Graphics.Cocos2d.Scene
 import Graphics.Cocos2d.Action
 import Resources

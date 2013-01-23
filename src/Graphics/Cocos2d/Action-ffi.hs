@@ -2,7 +2,8 @@ module Graphics.Cocos2d.Action where
 
 import Haste
 import Haste.Prim
-import Graphics.Cocos2d
+import Graphics.Cocos2d.Utils
+import Graphics.Cocos2d.Node
 import Graphics.Cocos2d.Animation
 import Data.Word
 
@@ -33,12 +34,12 @@ data Action = Sequence [Action]
             | Hide
             | ToggleVisibility
             | OrbitCamera Double Double Double Double Double Double Double
-            | Follow Node Double Double Double Double
+            | Follow (Node ()) Double Double Double Double
             | CardinalSplineTo Double [(Double,Double)] Double
             | CardinalSplineBy Double [(Double,Double)] Double
             | CatmullRomTo Double [(Double,Double)]
             | CatmullRomBy Double [(Double,Double)]
-            | TargetedAction Node Action
+            | TargetedAction (Node ()) Action
             | CallFunc (IO ())
             | TagAction Int Action
             | Reverse Action
@@ -150,35 +151,34 @@ foreign import jscall "%1.reverse()"                     reverseAction :: JSActi
 foreign import jscall "cc.Repeat.create(%1,%2)"          repeatAction :: JSAction -> Int -> IO JSAction
 foreign import jscall "cc.RepeatForever.create(%1)"      repeatForeverAction :: JSAction -> IO JSAction
 foreign import jscall "cc.OrbitCamera.create(%*)"        orbitCameraAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.Follow.create(%1,cc.rect(%*))" followAction :: Node -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import jscall "cc.Follow.create(%1,cc.rect(%*))" followAction :: Node a -> Double -> Double -> Double -> Double -> IO JSAction
 foreign import jscall "cc.CardinalSplineTo.create(%*)" cardinalSplineToAction :: Double -> PointArray -> Double -> IO JSAction
 foreign import jscall "cc.CardinalSplineBy.create(%*)" cardinalSplineByAction :: Double -> PointArray -> Double -> IO JSAction
 foreign import jscall "cc.CatmullRomTo.create(%*)" catmullRomToAction :: Double -> PointArray -> IO JSAction
 foreign import jscall "cc.CatmullRomBy.create(%*)" catmullRomByAction :: Double -> PointArray -> IO JSAction
-foreign import jscall "cc.TargetedAction.create(%*)" targetedAction :: Node -> JSAction -> IO JSAction
+foreign import jscall "cc.TargetedAction.create(%*)" targetedAction :: Node a -> JSAction -> IO JSAction
 
 -- Operations on nodes
-addAction :: (NodeDerived a) => Action -> a -> Bool -> IO ()
+addAction :: Action -> Node a -> Bool -> IO ()
 addAction a n b = do
   a1 <- toJSAction a
-  nodeAddAction a1 (toNode n) b
+  jsAddAction a1 n b
+foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" jsAddAction :: JSAction -> Node a -> Bool -> IO ()
 
-runAction :: (NodeDerived a) => a -> Action -> IO ()
+runAction :: Node a -> Action -> IO ()
 runAction n a = do
   a1 <- toJSAction a
-  nodeRunAction (toNode n) $! a1
+  jsRunAction n $! a1
+foreign import jscall "%1.runAction(%2)" jsRunAction :: Node a -> JSAction -> IO ()
 
-stopAllActions :: (NodeDerived a) => a -> IO ()
-stopAllActions a = nodeStopAllActions (toNode a)
+stopAllActions :: Node a -> IO ()
+stopAllActions a = jsStopAllActions a
+foreign import jscall "%1.stopAllActions()" jsStopAllActions :: Node a -> IO ()
 
-stopActionByTag :: (NodeDerived a) => a -> Int -> IO ()
-stopActionByTag a i = nodeStopActionByTag (toNode a) i
+stopActionByTag :: Node a -> Int -> IO ()
+stopActionByTag a i = jsStopActionByTag a i
+foreign import jscall "%1.stopActionByTag(%2)" jsStopActionByTag :: Node a -> Int -> IO ()
 
-foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
-foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
-foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
-foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
-
-foreign import jscall "director.getActionManager().pauseAllRunningActions()" nodePauseAllRunningActions :: IO NodeSet
-pauseAllRunningActions :: IO [Node]
-pauseAllRunningActions = nodePauseAllRunningActions >>= nodeSetToNodeList
+pauseAllRunningActions :: IO [Node ()]
+pauseAllRunningActions = jsPauseAllRunningActions >>= nodeSetToNodeList
+foreign import jscall "director.getActionManager().pauseAllRunningActions()" jsPauseAllRunningActions :: IO NodeSet

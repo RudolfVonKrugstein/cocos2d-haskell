@@ -1,10 +1,6 @@
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ImpredicativeTypes #-}
-{-# LANGUAGE UndecidableInstances #-}
-
-module Graphics.Cocos2d (
+module Graphics.Cocos2d.Node (
+  Node,
+  NodeSet,
   addChild,
   addChild_,
   removeChild,
@@ -19,7 +15,8 @@ module Graphics.Cocos2d (
   setVisible,
   setColor,
   setOpacity,
-  setRatation
+  setRotation,
+  nodeSetToNodeList
 )
 where
 
@@ -39,6 +36,8 @@ import Graphics.Cocos2d.Utils
 
 data CNode a
 type Node a = Ptr (CNode a)
+data CNodeSet
+type NodeSet = Ptr CNodeSet
 
 foreign import jscall "%1.addChild(%2,%3)"                addChild         :: Node a -> Node b -> Int -> IO ()
 foreign import jscall "%1.addChild(%2)"                   addChild_        :: Node a -> Node b -> IO ()
@@ -55,7 +54,7 @@ setPosition :: Node a -> (Double, Double) -> IO ()
 setPosition n p = tupleToPoint p >>= jsSetPosition n
 foreign import jscall "%1.getPosition()"                  jsGetPosition    :: Node a -> IO Point
 getPosition :: Node a -> IO (Double, Double)
-getPosition n = jsGetPosition n >>= pointToTouple
+getPosition n = jsGetPosition n >>= pointToTuple
 foreign import jscall "%1.setScale(%2,%3)"                setScale         :: Node a -> Double -> Double -> IO ()
 foreign import jscall "%1.setVisible(%2)"                 setVisible       :: Node a -> Bool -> IO ()
 foreign import jscall "%1.setColor(cc.c4b(%*))"           jsSetColor       :: Node a -> Word8 -> Word8 -> Word8 -> Word8 -> IO ()
@@ -79,5 +78,5 @@ nodeSetToNodeList set = do
   mapM (\i -> nodeSetGetNthNode set i) [0..(num-1)]
 
 foreign import jscall "%1.length" nodeSetSize    :: NodeSet -> IO Int
-foreign import jscall "%1[%2]" nodeSetGetNthNode :: NodeSet -> Int -> IO Node
+foreign import jscall "%1[%2]" nodeSetGetNthNode :: NodeSet -> Int -> IO (Node ())
 

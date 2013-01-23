@@ -1,4 +1,4 @@
-module Graphics.Cocos2d where
+module Graphics.Cocos2d.Utils where
 
 import Haste
 import Haste.Prim
@@ -18,11 +18,6 @@ type PointArray = Ptr CPointArray
 -- color types
 data Color4b = Color4b Word8 Word8 Word8 Word8
 data DeltaColor4b = DeltaColor4b Int Int Int Int
-
--- Start cococs2d app
-data CApp
-type App = Ptr CApp
-foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
 
 -- general settings
 foreign import jscall "cc.Director.getInstance().setDisplayStats(%1)" setDisplayStats :: Bool -> IO ()
@@ -44,7 +39,7 @@ sizeToTuple s = do
 foreign import jscall "cc.Director.getInstance().getWinSize()" jsGetWinSize :: IO Size
 
 getWinSize :: IO (Double,Double)
-getWinSize = sizeToTuple <$> jsGetWinSize
+getWinSize = jsGetWinSize >>= sizeToTuple
 
 -- point type
 foreign import jscall "%1.x"        pointX      :: Point -> IO Double
@@ -60,7 +55,7 @@ pointToTuple p = do
 
 foreign import jscall "cc.PointZero()" jsPointZero :: IO Point
 pointZero :: IO (Double,Double)
-pointZero = pointToTuple <$> pointZeroJS
+pointZero = jsPointZero >>= pointToTuple
 
 -- array of points
 foreign import jscall "new Array"            createPointArray :: IO PointArray
