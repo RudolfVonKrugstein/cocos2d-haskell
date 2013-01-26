@@ -1,3 +1,5 @@
+{-# LANGUAGE GADTs#-}
+
 module Graphics.Cocos2d.Menu (
   Menu,
   MenuItem,
@@ -7,7 +9,8 @@ module Graphics.Cocos2d.Menu (
   createMenuWithItems,
   addMenuItem,
   createMenuItemImage,
-  createMenuItemLabel
+  createMenuItemLabel,
+  MenuItemBox(..)
 ) where
 
 import Haste
@@ -32,13 +35,16 @@ data CMenuItemImage a
 type MenuItemImage a = MenuItemSprite (CMenuItemImage a)
 
 foreign import jscall "cc.Menu.create()" createMenu :: IO (Menu ())
-createMenuWithItems :: [MenuItem ()] -> IO (Menu ())
+
+data MenuItemBox = forall a. MenuItemBox (MenuItem a)
+
+createMenuWithItems :: [MenuItemBox] -> IO (Menu ())
 createMenuWithItems items = do
   m <- createMenu
-  mapM_ (addMenuItem m) items
+  mapM_ (\(MenuItemBox i) -> addMenuItem m i) items
   return m
 
-foreign import jscall "%1.addChild(%2)" addMenuItem :: Menu a -> MenuItem a -> IO ()
+foreign import jscall "%1.addChild(%2)" addMenuItem :: Menu a -> MenuItem b -> IO ()
 
 foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO (MenuItemImage ())
 

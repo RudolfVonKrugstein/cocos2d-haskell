@@ -16,6 +16,7 @@ module Graphics.Cocos2d.Node (
   setColor,
   setOpacity,
   setRotation,
+  getContentSize,
   nodeSetToNodeList
 )
 where
