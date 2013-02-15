@@ -1,25 +1,7 @@
-all: TouchDelegate.hs TouchDelegate.js Scene.hs Scene.js Action.hs Action.js Animation.hs Animation.js
+all: Utils.hs Utils.js Node.hs Node.js Layer.hs Layer.js Scene.hs Scene.js Action.hs Action.js Animation.hs Animation.js Sprite.hs Sprite.js Label.hs Label.js Menu.hs Menu.js
 
-TouchDelegate.hs: TouchDelegate-ffi.hs
-	haste-ffi-parser TouchDelegate-ffi.hs TouchDelegate
+%.hs: %-ffi.hs
+	haste-ffi-parser $< $(basename $@)
 
-TouchDelegate.js: TouchDelegate-ffi.hs
-	haste-ffi-parser TouchDelegate-ffi.hs TouchDelegate
-
-Scene.hs: Scene-ffi.hs
-	haste-ffi-parser Scene-ffi.hs Scene
-
-Scene.js: Scene-ffi.hs
-	haste-ffi-parser Scene-ffi.hs Scene
-
-Action.hs: Action-ffi.hs
-	haste-ffi-parser Action-ffi.hs Action
-
-Action.js: Action-ffi.hs
-	haste-ffi-parser Action-ffi.hs Action
-
-Animation.hs: Animation-ffi.hs
-	haste-ffi-parser Animation-ffi.hs Animation
-
-Animation.js: Animation-ffi.hs
-	haste-ffi-parser Animation-ffi.hs Animation
+%.js: %.ffi.hs
+	haste-ffi-parser $< $(basename $@)
