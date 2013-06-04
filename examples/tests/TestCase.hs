@@ -7,18 +7,18 @@ import Resources
 -- Base structure to structure test cases
 data TestCase = TestCase {
 	prev     :: TestCase,
-	scene    :: IO (Scene ()),
+	scene    :: IO Scene,
 	next     :: TestCase,
 	title    :: String}
 
 -- Create test case from list of scenes
-testCaseFromList :: [(IO (Scene a), String)] -> TestCase
+testCaseFromList :: [(IO Scene, String)] -> TestCase
 testCaseFromList all@((scene,name):rest) = TestCase prevTestCase scene nextTestCase name
   where
   prevTestCase = testCaseFromList $ (last all):(init all)
   nextTestCase = testCaseFromList $ rest ++ [(scene,name)]
 
-runTestCase :: TestCase -> ((Scene a) -> IO ()) -> IO ()
+runTestCase :: TestCase -> (Scene -> IO ()) -> IO ()
 runTestCase test modifyScene = do
   (winWidth,winHeight) <- getWinSize
   scene <- scene test
@@ -32,7 +32,7 @@ runTestCase test modifyScene = do
   item2 <- createMenuItemImage s_pathR1 s_pathR2 (runTestCase test modifyScene)
   item3 <- createMenuItemImage s_pathF1 s_pathF2 (runTestCase (next test) modifyScene)
 
-  menu <- createMenuWithItems $ map (MenuItemBox) [item1,item2,item3]
+  menu <- createMenuWithItems $ [toMenuItem item1,toMenuItem item2,toMenuItem item3]
 
   setPosition menu (0.0,0.0)
   (width2,height2) <- getContentSize item2

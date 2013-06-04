@@ -1,6 +1,7 @@
 module Graphics.Cocos2d.Node (
   Node,
   NodeSet,
+  NodeBase (..),
   addChild,
   addChild_,
   removeChild,
@@ -16,8 +17,14 @@ module Graphics.Cocos2d.Node (
   setColor,
   setOpacity,
   setRotation,
+  setContentSize,
   getContentSize,
-  nodeSetToNodeList
+  nodeSetToNodeList,
+  scheduleInterval,
+  scheduleOnce,
+  resumeTarget,
+  resumeTargets,
+  pauseTarget
 )
 where
 
@@ -48,7 +55,7 @@ instance NodeBase Node where
 foreign import cpattern "%1.addChild(%2,%3)"                addChild         :: (NodeBase a, NodeBase b) => a -> b -> Int -> IO ()
 foreign import cpattern "%1.addChild(%2)"                   addChild_        :: (NodeBase a, NodeBase b) => a -> b -> IO ()
 foreign import cpattern "%1.removeChild(%2)"                removeChild      :: (NodeBase a, NodeBase b) => a -> b -> IO ()
-foreign import cpattern "%1.setTag(%2)"                     setTag           :: (NodeBase a, NodeBase b) => a -> b -> Int -> IO ()
+foreign import cpattern "%1.setTag(%2)"                     setTag           :: (NodeBase a) => a -> Int -> IO ()
 foreign import cpattern "%1.getChildByTag(%2)"              getChildByTag    :: (NodeBase a) => a -> Int -> IO Node
 foreign import cpattern "%1.getParent()"                    getParent        :: (NodeBase a) => a -> IO Node
 foreign import cpattern "%1.removeFromParent()"             removeFromParent :: (NodeBase a) => a -> IO ()
@@ -75,6 +82,8 @@ foreign import cpattern "%1.setContentSize(cc.size(%2,%3))" setContentSize :: (N
 foreign import cpattern "%1.schedule(function (a) {A(%2, [[1,a],0]);},%3)" scheduleInterval :: (NodeBase a) => a -> IO () -> Double -> IO ()
 foreign import cpattern "%1.scheduleOnce(function (a) {A(%2, [[1,a],0]);},%3)" scheduleOnce :: (NodeBase a) => a -> IO () -> Double -> IO ()
 foreign import cpattern "cc.Director.getInstance().getActionManager().resumeTarget(%1)" resumeTarget :: (NodeBase a) => a -> IO ()
+resumeTargets :: [Node] -> IO ()
+resumeTargets = mapM_ (resumeTarget)
 foreign import cpattern "cc.Director.getInstance().getActionManager().pauseTarget(%1)"  pauseTarget  :: (NodeBase a) => a -> IO ()
 
 -- array of nodes

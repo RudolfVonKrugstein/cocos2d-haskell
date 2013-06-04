@@ -3,14 +3,15 @@
 module Graphics.Cocos2d.Menu (
   Menu,
   MenuItem,
+  MenuItemBase (..),
   MenuItemSprite,
+  MenuItemSpriteBase (..),
   MenuItemLabel,
   createMenu,
   createMenuWithItems,
   addMenuItem,
   createMenuItemImage,
-  createMenuItemLabel,
-  MenuItemBox(..)
+  createMenuItemLabel
 ) where
 
 import Haste
@@ -19,34 +20,71 @@ import Graphics.Cocos2d.Node
 import Graphics.Cocos2d.Layer
 import Graphics.Cocos2d.Label
 
-data CMenu a
-type Menu a = Layer (CMenu a)
+data CMenu
+type Menu = Ptr CMenu
 
-data CMenuItem a
-type MenuItem a = Node (CMenuItem a)
+instance LayerBase Menu where
+  toLayer = menuToLayer
+foreign import cpattern "returnSame" menuToLayer :: Menu -> Layer
+instance NodeBase Menu where
+  toNode = menuToNode
+foreign import cpattern "returnSame" menuToNode :: Menu -> Node
 
-data CMenuItemSprite a
-type MenuItemSprite a = MenuItem (CMenuItemSprite a)
+data CMenuItem
+type MenuItem = Ptr CMenuItem
 
-data CMenuItemLabel a
-type MenuItemLabel a = MenuItem (CMenuItemLabel a)
+instance NodeBase MenuItem where
+  toNode = menuItemToNode
+foreign import cpattern "returnSame" menuItemToNode :: MenuItem -> Node
 
-data CMenuItemImage a
-type MenuItemImage a = MenuItemSprite (CMenuItemImage a)
+class MenuItemBase a where
+  toMenuItem :: a -> MenuItem
 
-foreign import jscall "cc.Menu.create()" createMenu :: IO (Menu ())
+instance MenuItemBase MenuItem where
+  toMenuItem = id
 
-data MenuItemBox = forall a. MenuItemBox (MenuItem a)
+data CMenuItemSprite
+type MenuItemSprite = Ptr CMenuItemSprite
+instance MenuItemBase MenuItemSprite where
+  toMenuItem = menuItemSpriteToMenuItem
+foreign import cpattern "returnSame" menuItemSpriteToMenuItem :: MenuItemSprite -> MenuItem
+instance NodeBase MenuItemSprite where
+  toNode = menuItemToNode . menuItemSpriteToMenuItem
 
-createMenuWithItems :: [MenuItemBox] -> IO (Menu ())
+class MenuItemSpriteBase a where
+  toMenuItemSprite :: a -> MenuItemSprite
+instance MenuItemSpriteBase MenuItemSprite where
+  toMenuItemSprite = id
+
+data CMenuItemLabel
+type MenuItemLabel = Ptr CMenuItemLabel
+instance MenuItemBase MenuItemLabel where
+  toMenuItem = menuItemLabelToMenuItem
+foreign import cpattern "returnSame" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
+instance NodeBase MenuItemLabel where
+  toNode = menuItemToNode . menuItemLabelToMenuItem
+
+data CMenuItemImage
+type MenuItemImage = Ptr CMenuItemImage
+instance MenuItemSpriteBase MenuItemImage where
+  toMenuItemSprite = menuItemImageToMenuItemSprite
+foreign import cpattern "returnSame" menuItemImageToMenuItemSprite :: MenuItemImage -> MenuItemSprite
+instance MenuItemBase MenuItemImage where
+  toMenuItem = toMenuItem . toMenuItemSprite
+instance NodeBase MenuItemImage where
+  toNode = toNode . menuItemImageToMenuItemSprite
+
+foreign import cpattern "cc.Menu.create()" createMenu :: IO Menu
+
+createMenuWithItems :: [MenuItem] -> IO Menu
 createMenuWithItems items = do
   m <- createMenu
-  mapM_ (\(MenuItemBox i) -> addMenuItem m i) items
+  mapM_ (\i -> addMenuItem m i) items
   return m
 
-foreign import jscall "%1.addChild(%2)" addMenuItem :: Menu a -> MenuItem b -> IO ()
+foreign import cpattern "%1.addChild(%2)" addMenuItem :: (MenuItemBase a) => Menu -> a -> IO ()
 
-foreign import jscall "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO (MenuItemImage ())
+foreign import cpattern "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItemImage
 
-foreign import jscall "cc.MenuItemLabel.create(%1,%2,0)" createMenuItemLabel :: LabelTTF a -> IO () -> IO (MenuItemLabel ())
+foreign import cpattern "cc.MenuItemLabel.create(%1,%2,0)" createMenuItemLabel :: LabelTTF -> IO () -> IO MenuItemLabel
 

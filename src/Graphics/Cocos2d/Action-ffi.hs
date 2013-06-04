@@ -34,12 +34,12 @@ data Action = Sequence [Action]
             | Hide
             | ToggleVisibility
             | OrbitCamera Double Double Double Double Double Double Double
-            | Follow (Node ()) Double Double Double Double
+            | Follow Node Double Double Double Double
             | CardinalSplineTo Double [(Double,Double)] Double
             | CardinalSplineBy Double [(Double,Double)] Double
             | CatmullRomTo Double [(Double,Double)]
             | CatmullRomBy Double [(Double,Double)]
-            | TargetedAction (Node ()) Action
+            | TargetedAction Node Action
             | CallFunc (IO ())
             | TagAction Int Action
             | Reverse Action
@@ -120,70 +120,70 @@ toJSAction (TargetedAction n a) = do
   a1 <- toJSAction a
   targetedAction n a1
 
-foreign import jscall "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> IO JSAction
-foreign import jscall "cc.Spawn.create(%1,%2)"           spawnAction :: JSAction -> JSAction -> IO JSAction
-foreign import jscall "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> IO JSAction
-foreign import jscall "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> IO JSAction
-foreign import jscall "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.ScaleBy.create(%1,%2,%3)"      scaleByAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.SkewTo.create(%1,%2,%3)" skewToAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.SkewBy.create(%1,%2,%3)" skewByAction :: Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.JumpTo.create(%1,cc.p(%2,%3),%4,%5)" jumpToAction :: Double -> Double -> Double -> Double -> Int -> IO JSAction
-foreign import jscall "cc.JumpBy.create(%1,cc.p(%2,%3),%4,%5)" jumpByAction :: Double -> Double -> Double -> Double -> Int -> IO JSAction
-foreign import jscall "cc.BezierTo.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7)])" bezierToAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.BezierBy.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7)])" bezierByAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.TintTo.create(%1,%2,%3,%4,%5)" tintToAction :: Double -> Word8 -> Word8 -> Word8 -> Word8 -> IO JSAction
-foreign import jscall "cc.TintBy.create(%1,%2,%3,%4,%5)" tintByAction :: Double -> Int -> Int -> Int -> Int -> IO JSAction
-foreign import jscall "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
-foreign import jscall "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
-foreign import jscall "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
-foreign import jscall "cc.Animate.create(%1)"            animationAction :: JSAnimation -> IO JSAction
-foreign import jscall "cc.Place.create(cc.p(%1,%2))"     placeAction :: Double -> Double -> IO JSAction
-foreign import jscall "cc.Show.create()"                  showAction :: IO JSAction
-foreign import jscall "cc.Hide.create()"                  hideAction :: IO JSAction
-foreign import jscall "cc.ToggleVisibility.create()"      toggleVisibilityAction :: IO JSAction
-foreign import jscall "cc.Blink.create(%1,%2)" blinkAction :: Double -> Int -> IO JSAction
-foreign import jscall "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
-foreign import jscall "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
-foreign import jscall "%1.reverse()"                     reverseAction :: JSAction -> IO JSAction
-foreign import jscall "cc.Repeat.create(%1,%2)"          repeatAction :: JSAction -> Int -> IO JSAction
-foreign import jscall "cc.RepeatForever.create(%1)"      repeatForeverAction :: JSAction -> IO JSAction
-foreign import jscall "cc.OrbitCamera.create(%*)"        orbitCameraAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.Follow.create(%1,cc.rect(%*))" followAction :: Node a -> Double -> Double -> Double -> Double -> IO JSAction
-foreign import jscall "cc.CardinalSplineTo.create(%*)" cardinalSplineToAction :: Double -> PointArray -> Double -> IO JSAction
-foreign import jscall "cc.CardinalSplineBy.create(%*)" cardinalSplineByAction :: Double -> PointArray -> Double -> IO JSAction
-foreign import jscall "cc.CatmullRomTo.create(%*)" catmullRomToAction :: Double -> PointArray -> IO JSAction
-foreign import jscall "cc.CatmullRomBy.create(%*)" catmullRomByAction :: Double -> PointArray -> IO JSAction
-foreign import jscall "cc.TargetedAction.create(%*)" targetedAction :: Node a -> JSAction -> IO JSAction
+foreign import cpattern "cc.Sequence.create(%1,%2)"        sequenceAction :: JSAction -> JSAction -> IO JSAction
+foreign import cpattern "cc.Spawn.create(%1,%2)"           spawnAction :: JSAction -> JSAction -> IO JSAction
+foreign import cpattern "cc.RotateTo.create(%1,%2)"        rotateToAction :: Double -> Double -> IO JSAction
+foreign import cpattern "cc.RotateBy.create(%1,%2)"        rotateByAction :: Double -> Double -> IO JSAction
+foreign import cpattern "cc.ScaleTo.create(%1,%2,%3)"      scaleToAction :: Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.ScaleBy.create(%1,%2,%3)"      scaleByAction :: Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.MoveTo.create(%1,cc.p(%2,%3))" moveToAction :: Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.MoveBy.create(%1,cc.p(%2,%3))" moveByAction :: Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.SkewTo.create(%1,%2,%3)" skewToAction :: Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.SkewBy.create(%1,%2,%3)" skewByAction :: Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.JumpTo.create(%1,cc.p(%2,%3),%4,%5)" jumpToAction :: Double -> Double -> Double -> Double -> Int -> IO JSAction
+foreign import cpattern "cc.JumpBy.create(%1,cc.p(%2,%3),%4,%5)" jumpByAction :: Double -> Double -> Double -> Double -> Int -> IO JSAction
+foreign import cpattern "cc.BezierTo.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7)])" bezierToAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.BezierBy.create(%1,[cc.p(%2,%3),cc.p(%4,%5),cc.p(%6,%7)])" bezierByAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.TintTo.create(%1,%2,%3,%4,%5)" tintToAction :: Double -> Word8 -> Word8 -> Word8 -> Word8 -> IO JSAction
+foreign import cpattern "cc.TintBy.create(%1,%2,%3,%4,%5)" tintByAction :: Double -> Int -> Int -> Int -> Int -> IO JSAction
+foreign import cpattern "cc.DelayTime.create(%1)"          delayTimeAction :: Double -> IO JSAction
+foreign import cpattern "cc.FadeIn.create(%1)"             fadeInAction :: Double -> IO JSAction
+foreign import cpattern "cc.FadeOut.create(%1)"            fadeOutAction :: Double -> IO JSAction
+foreign import cpattern "cc.Animate.create(%1)"            animationAction :: JSAnimation -> IO JSAction
+foreign import cpattern "cc.Place.create(cc.p(%1,%2))"     placeAction :: Double -> Double -> IO JSAction
+foreign import cpattern "cc.Show.create()"                  showAction :: IO JSAction
+foreign import cpattern "cc.Hide.create()"                  hideAction :: IO JSAction
+foreign import cpattern "cc.ToggleVisibility.create()"      toggleVisibilityAction :: IO JSAction
+foreign import cpattern "cc.Blink.create(%1,%2)" blinkAction :: Double -> Int -> IO JSAction
+foreign import cpattern "cc.CallFunc.create(function (a) {A(%1, [[1,a],0]);})" callFuncAction :: IO () -> IO JSAction
+foreign import cpattern "%1.setTag(%2)"                    tagAction :: JSAction -> Int -> IO ()
+foreign import cpattern "%1.reverse()"                     reverseAction :: JSAction -> IO JSAction
+foreign import cpattern "cc.Repeat.create(%1,%2)"          repeatAction :: JSAction -> Int -> IO JSAction
+foreign import cpattern "cc.RepeatForever.create(%1)"      repeatForeverAction :: JSAction -> IO JSAction
+foreign import cpattern "cc.OrbitCamera.create(%*)"        orbitCameraAction :: Double -> Double -> Double -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.Follow.create(%1,cc.rect(%*))" followAction :: (NodeBase a) => a -> Double -> Double -> Double -> Double -> IO JSAction
+foreign import cpattern "cc.CardinalSplineTo.create(%*)" cardinalSplineToAction :: Double -> PointArray -> Double -> IO JSAction
+foreign import cpattern "cc.CardinalSplineBy.create(%*)" cardinalSplineByAction :: Double -> PointArray -> Double -> IO JSAction
+foreign import cpattern "cc.CatmullRomTo.create(%*)" catmullRomToAction :: Double -> PointArray -> IO JSAction
+foreign import cpattern "cc.CatmullRomBy.create(%*)" catmullRomByAction :: Double -> PointArray -> IO JSAction
+foreign import cpattern "cc.TargetedAction.create(%*)" targetedAction :: (NodeBase a) => a -> JSAction -> IO JSAction
 
 -- Operations on nodes
-addAction :: Action -> Node a -> Bool -> IO ()
+addAction :: (NodeBase a) => Action -> a -> Bool -> IO ()
 addAction a n b = do
   a1 <- toJSAction a
   jsAddAction a1 n b
-foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" jsAddAction :: JSAction -> Node a -> Bool -> IO ()
+foreign import cpattern "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" jsAddAction :: (NodeBase a) => JSAction -> a -> Bool -> IO ()
 
-runAction :: Node a -> Action -> IO ()
+runAction :: (NodeBase a) => a -> Action -> IO ()
 runAction n a = do
   a1 <- toJSAction a
   jsRunAction n $! a1
-foreign import jscall "%1.runAction(%2)" jsRunAction :: Node a -> JSAction -> IO ()
+foreign import cpattern "%1.runAction(%2)" jsRunAction :: (NodeBase a) => a -> JSAction -> IO ()
 
-stopAllActions :: Node a -> IO ()
+stopAllActions :: (NodeBase a) => a -> IO ()
 stopAllActions a = jsStopAllActions a
-foreign import jscall "%1.stopAllActions()" jsStopAllActions :: Node a -> IO ()
+foreign import cpattern "%1.stopAllActions()" jsStopAllActions :: (NodeBase a) => a -> IO ()
 
-stopActionByTag :: Node a -> Int -> IO ()
+stopActionByTag :: (NodeBase a) => a -> Int -> IO ()
 stopActionByTag a i = jsStopActionByTag a i
-foreign import jscall "%1.stopActionByTag(%2)" jsStopActionByTag :: Node a -> Int -> IO ()
+foreign import cpattern "%1.stopActionByTag(%2)" jsStopActionByTag :: NodeBase a => a -> Int -> IO ()
 
-foreign import jscall "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
-foreign import jscall "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
-foreign import jscall "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
-foreign import jscall "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
+foreign import cpattern "%1.runAction(%2)" nodeRunAction :: Node -> JSAction -> IO ()
+foreign import cpattern "cc.Director.getInstance().getActionManager().addAction(%1,%2,%3)" nodeAddAction :: JSAction -> Node -> Bool -> IO ()
+foreign import cpattern "%1.stopAllActions()" nodeStopAllActions :: Node -> IO ()
+foreign import cpattern "%1.stopActionByTag(%2)" nodeStopActionByTag :: Node -> Int -> IO ()
 
-foreign import jscall "cc.Director.getInstance().getActionManager().pauseAllRunningActions()" nodePauseAllRunningActions :: IO NodeSet
+foreign import cpattern "cc.Director.getInstance().getActionManager().pauseAllRunningActions()" nodePauseAllRunningActions :: IO NodeSet
 pauseAllRunningActions :: IO [Node]
 pauseAllRunningActions = nodePauseAllRunningActions >>= nodeSetToNodeList

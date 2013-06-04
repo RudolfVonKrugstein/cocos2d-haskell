@@ -32,4 +32,4 @@ data CApp
 type App = Ptr CApp
 
 -- Start cococs2d app
-foreign import jscall "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
+foreign import cpattern "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
