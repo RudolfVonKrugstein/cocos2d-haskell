@@ -13,6 +13,9 @@ module Graphics.Cocos2d
   , module Graphics.Cocos2d.Sprite
   , module Graphics.Cocos2d.Label
   , module Graphics.Cocos2d.Menu
+  , App
+  , cocos2dApp
+  , quit
 ) where
 
 import Graphics.Cocos2d.Action
@@ -33,3 +36,4 @@ type App = Ptr CApp
 
 -- Start cococs2d app
 foreign import cpattern "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
+foreign import cpattern "history.go(-1)" quit :: IO ()

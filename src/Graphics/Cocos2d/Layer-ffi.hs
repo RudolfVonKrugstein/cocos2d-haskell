@@ -21,7 +21,7 @@ instance LayerBase Layer where
   toLayer = id
 instance NodeBase Layer where
   toNode = layerToNode
-foreign import cpattern "returnSame" layerToNode :: Layer -> Node
+foreign import ccall "returnSame" layerToNode :: Layer -> Node
 
 foreign import cpattern "new cc.Layer()" createLayer :: IO Layer
 foreign import cpattern "cc.LayerGradient.create(cc.c4b(%1,%2,%3,%4), cc.c4b(%5,%6,%7,%8))" jsCreateLayerGradient :: Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> Word8 -> IO Layer

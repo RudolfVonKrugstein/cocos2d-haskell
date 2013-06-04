@@ -155,7 +155,7 @@ actionDemoScene subtitle code run = createScene $ \scene -> do
 
 actionManualScene = actionDemoScene subtitle code $ \sprites -> do
   (winWidth, winHeight) <- getWinSize
-  setScale (_tamara sprites) (2.5, -1.0)
+  setScale (_tamara sprites) 2.5 (-1.0)
   setPosition (_tamara sprites) (100.0, 70.0)
   setOpacity (_tamara sprites) 128.0
 
@@ -239,18 +239,18 @@ actionSkewRotateScaleScene = createScene $ \scene -> do
   box <- createLayerColor (Color4b 255 255 0 255)
   setAnchorPoint box (0.0, 0.0)
   setPosition box $ (0.5 :: Double) *^ ((winWidth,winHeight) ^-^ boxSize)
-  setContentSize box boxSize
+  setContentSize box (fst boxSize) (snd boxSize)
 
   let markrside = 10.0
   uL <- createLayerColor (Color4b 255 0 0 255)
   addChild_ box uL
-  setContentSize uL (markrside,markrside)
+  setContentSize uL markrside markrside
   setPosition uL (0.0, (snd boxSize) - markrside)
   setAnchorPoint uL (0.0, 0.0)
 
   uR <- createLayerColor (Color4b 0 0 255 255)
   addChild_ box uR
-  setContentSize uR (markrside,markrside)
+  setContentSize uR markrside markrside
   setPosition uR ((fst boxSize) + markrside, (snd boxSize) - markrside)
   setAnchorPoint uL (0.0, 0.0)
 

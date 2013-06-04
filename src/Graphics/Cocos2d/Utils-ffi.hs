@@ -20,15 +20,15 @@ data Color4b = Color4b Word8 Word8 Word8 Word8
 data DeltaColor4b = DeltaColor4b Int Int Int Int
 
 -- general settings
-foreign import jscall "cc.Director.getInstance().setDisplayStats(%1)" setDisplayStats :: Bool -> IO ()
-foreign import jscall "cc.Director.getInstance().setAnimationInterval(%1)" setAnimationInterval :: Double -> IO ()
+foreign import cpattern "cc.Director.getInstance().setDisplayStats(%1)" setDisplayStats :: Bool -> IO ()
+foreign import cpattern "cc.Director.getInstance().setAnimationInterval(%1)" setAnimationInterval :: Double -> IO ()
 
 -- output some logging info
-foreign import jscall "cc.log(%1)" logOut :: String -> IO ()
+foreign import cpattern "cc.log(%1)" logOut :: String -> IO ()
 
 -- size type
-foreign import jscall "%1.width"  sizeWidth  :: Size -> IO Double
-foreign import jscall "%1.height" sizeHeight :: Size -> IO Double
+foreign import cpattern "%1.width"  sizeWidth  :: Size -> IO Double
+foreign import cpattern "%1.height" sizeHeight :: Size -> IO Double
 
 sizeToTuple :: Size -> IO (Double,Double)
 sizeToTuple s = do
@@ -36,15 +36,15 @@ sizeToTuple s = do
   h <- sizeHeight s
   return (w,h)
 
-foreign import jscall "cc.Director.getInstance().getWinSize()" jsGetWinSize :: IO Size
+foreign import cpattern "cc.Director.getInstance().getWinSize()" jsGetWinSize :: IO Size
 
 getWinSize :: IO (Double,Double)
 getWinSize = jsGetWinSize >>= sizeToTuple
 
 -- point type
-foreign import jscall "%1.x"        pointX      :: Point -> IO Double
-foreign import jscall "%1.y"        pointY      :: Point -> IO Double
-foreign import jscall "cc.p(%1,%2)" createPoint :: Double -> Double -> IO Point
+foreign import cpattern "%1.x"        pointX      :: Point -> IO Double
+foreign import cpattern "%1.y"        pointY      :: Point -> IO Double
+foreign import cpattern "cc.p(%1,%2)" createPoint :: Double -> Double -> IO Point
 tupleToPoint :: (Double,Double) -> IO Point
 tupleToPoint t = createPoint (fst t) (snd t)
 pointToTuple :: Point -> IO (Double,Double)
@@ -53,13 +53,13 @@ pointToTuple p = do
   y <- pointY p
   return (x,y)
 
-foreign import jscall "cc.PointZero()" jsPointZero :: IO Point
+foreign import cpattern "cc.PointZero()" jsPointZero :: IO Point
 pointZero :: IO (Double,Double)
 pointZero = jsPointZero >>= pointToTuple
 
 -- array of points
-foreign import jscall "new Array"            createPointArray :: IO PointArray
-foreign import jscall "%1.push(cc.p(%2,%3))" pushToPointArray :: PointArray -> Double -> Double -> IO ()
+foreign import cpattern "new Array"            createPointArray :: IO PointArray
+foreign import cpattern "%1.push(cc.p(%2,%3))" pushToPointArray :: PointArray -> Double -> Double -> IO ()
 pointArrayFromList :: [(Double,Double)] -> IO PointArray
 pointArrayFromList is = do
   pa <- createPointArray

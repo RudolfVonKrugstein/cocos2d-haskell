@@ -14,9 +14,9 @@ type LabelTTF = Ptr CLabelTTF
 
 instance NodeBase LabelTTF where
   toNode = labelTTFToNode
-foreign import cpattern "returnSame" labelTTFToNode :: LabelTTF -> Node
+foreign import ccall "returnSame" labelTTFToNode :: LabelTTF -> Node
 instance SpriteBase LabelTTF where
   toSprite = labelTTFToSprite
-foreign import cpattern "returnSame" labelTTFToSprite :: LabelTTF -> Sprite
+foreign import ccall "returnSame" labelTTFToSprite :: LabelTTF -> Sprite
 
 foreign import cpattern "cc.LabelTTF.create(%1,%2,%3)" createLabelTTF :: String -> String -> Int -> IO LabelTTF

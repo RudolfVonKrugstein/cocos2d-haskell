@@ -21,6 +21,6 @@ instance SpriteBase Sprite where
 instance NodeBase Sprite where
   toNode = spriteToNode
 
-foreign import cpattern "returnSame" spriteToNode :: Sprite -> Node
+foreign import ccall "returnSame" spriteToNode :: Sprite -> Node
 
 foreign import cpattern "cc.Sprite.create(%1)" createSprite :: String -> IO Sprite

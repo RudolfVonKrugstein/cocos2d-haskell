@@ -25,17 +25,17 @@ type Menu = Ptr CMenu
 
 instance LayerBase Menu where
   toLayer = menuToLayer
-foreign import cpattern "returnSame" menuToLayer :: Menu -> Layer
+foreign import ccall "returnSame" menuToLayer :: Menu -> Layer
 instance NodeBase Menu where
   toNode = menuToNode
-foreign import cpattern "returnSame" menuToNode :: Menu -> Node
+foreign import ccall "returnSame" menuToNode :: Menu -> Node
 
 data CMenuItem
 type MenuItem = Ptr CMenuItem
 
 instance NodeBase MenuItem where
   toNode = menuItemToNode
-foreign import cpattern "returnSame" menuItemToNode :: MenuItem -> Node
+foreign import ccall "returnSame" menuItemToNode :: MenuItem -> Node
 
 class MenuItemBase a where
   toMenuItem :: a -> MenuItem
@@ -47,7 +47,7 @@ data CMenuItemSprite
 type MenuItemSprite = Ptr CMenuItemSprite
 instance MenuItemBase MenuItemSprite where
   toMenuItem = menuItemSpriteToMenuItem
-foreign import cpattern "returnSame" menuItemSpriteToMenuItem :: MenuItemSprite -> MenuItem
+foreign import ccall "returnSame" menuItemSpriteToMenuItem :: MenuItemSprite -> MenuItem
 instance NodeBase MenuItemSprite where
   toNode = menuItemToNode . menuItemSpriteToMenuItem
 
@@ -60,7 +60,7 @@ data CMenuItemLabel
 type MenuItemLabel = Ptr CMenuItemLabel
 instance MenuItemBase MenuItemLabel where
   toMenuItem = menuItemLabelToMenuItem
-foreign import cpattern "returnSame" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
+foreign import ccall "returnSame" menuItemLabelToMenuItem :: MenuItemLabel -> MenuItem
 instance NodeBase MenuItemLabel where
   toNode = menuItemToNode . menuItemLabelToMenuItem
 
@@ -68,7 +68,7 @@ data CMenuItemImage
 type MenuItemImage = Ptr CMenuItemImage
 instance MenuItemSpriteBase MenuItemImage where
   toMenuItemSprite = menuItemImageToMenuItemSprite
-foreign import cpattern "returnSame" menuItemImageToMenuItemSprite :: MenuItemImage -> MenuItemSprite
+foreign import ccall "returnSame" menuItemImageToMenuItemSprite :: MenuItemImage -> MenuItemSprite
 instance MenuItemBase MenuItemImage where
   toMenuItem = toMenuItem . toMenuItemSprite
 instance NodeBase MenuItemImage where

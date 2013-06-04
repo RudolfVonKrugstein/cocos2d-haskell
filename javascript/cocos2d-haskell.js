@@ -31,7 +31,7 @@ function startCocos2dApp(start) {
 
 // Function for casting to different types
 function returnSame(i,_) {
-	return [1,0,i];
+	return i;
 }
 
 //Scene for haskell with onEnter function

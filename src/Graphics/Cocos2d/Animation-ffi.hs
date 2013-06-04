@@ -26,11 +26,11 @@ toJSAnimation (Loop n a) = do
     
     
 
-foreign import jscall "cc.Animation.create()"          createJSAnimation :: IO JSAnimation
-foreign import jscall "%1.addSpriteFrameWithFile(%2)"  addAnimationSpriteFrameWithFile :: JSAnimation -> String -> IO ()
-foreign import jscall "%1.setDelayPerUnit(%2)"         animationSetDelayPerUnit :: JSAnimation -> Double -> IO ()
-foreign import jscall "%1.setLoops(%2)"                animationSetLoops :: JSAnimation -> Int -> IO ()
-foreign import jscall "%1.setRestoreOriginalFrame(%2)" animationSetRestoreOriginalFrame :: JSAnimation -> Bool -> IO ()
-foreign import jscall "cc.AnimationCache.getInstance().addAnimations(%1)" loadAnimationsIntoCache :: String -> IO ()
-foreign import jscall "cc.AnimationCache.getInstance().getAnimation(%1)" jSAnimationGetFromCache :: String -> IO JSAnimation
+foreign import cpattern "cc.Animation.create()"          createJSAnimation :: IO JSAnimation
+foreign import cpattern "%1.addSpriteFrameWithFile(%2)"  addAnimationSpriteFrameWithFile :: JSAnimation -> String -> IO ()
+foreign import cpattern "%1.setDelayPerUnit(%2)"         animationSetDelayPerUnit :: JSAnimation -> Double -> IO ()
+foreign import cpattern "%1.setLoops(%2)"                animationSetLoops :: JSAnimation -> Int -> IO ()
+foreign import cpattern "%1.setRestoreOriginalFrame(%2)" animationSetRestoreOriginalFrame :: JSAnimation -> Bool -> IO ()
+foreign import cpattern "cc.AnimationCache.getInstance().addAnimations(%1)" loadAnimationsIntoCache :: String -> IO ()
+foreign import cpattern "cc.AnimationCache.getInstance().getAnimation(%1)" jSAnimationGetFromCache :: String -> IO JSAnimation
 
