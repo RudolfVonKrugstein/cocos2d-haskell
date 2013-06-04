@@ -16,7 +16,7 @@ line_SPACE = 40.0
 main = cocos2dApp $ \app -> do
   mainScene <- mainMenuScene
   setAnimationInterval (1.0 / 60.0)
-  runWithScene mainScene
+  replaceScene mainScene
 
 -- add main menu to scene
 addMainMenuMenu :: Scene -> IO ()
