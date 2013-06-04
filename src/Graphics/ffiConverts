@@ -1,0 +1,7 @@
+[
+("String","JSString","toJSStr","fromJSStr"),
+("NodeBase","Node","toNode","fromNode"),
+("LayerBase","Layer","toLayer","fromLayer"),
+("MenuItemBase","MenuItem","toMenuItem","fromMenuItem"),
+("MenuItemSpriteBase","MenuItemSprite","toMenuItemSprite","fromMenuItemSprite")
+]
