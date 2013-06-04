@@ -34,10 +34,12 @@ import Graphics.Cocos2d.Utils
  - a function, taking a member of the appropriate type class, and calling the convert function.
  -}
 
-data Node
-data NodeSet
+data CNode
+type Node = Ptr CNode
+data CNodeSet
+type NodeSet = Ptr CNodeSet
 
-class NodeDerived a where
+class NodeBase a where
   toNode :: a -> Node
 
 instance NodeBase Node where
@@ -46,28 +48,28 @@ instance NodeBase Node where
 foreign import cpattern "%1.addChild(%2,%3)"                addChild         :: (NodeBase a, NodeBase b) => a -> b -> Int -> IO ()
 foreign import cpattern "%1.addChild(%2)"                   addChild_        :: (NodeBase a, NodeBase b) => a -> b -> IO ()
 foreign import cpattern "%1.removeChild(%2)"                removeChild      :: (NodeBase a, NodeBase b) => a -> b -> IO ()
-foreign import cpattern "%1.setTag(%2)"                     setTag           :: (Nodebase a, NodeBase b) => a -> b -> Int -> IO ()
-foreign import cpattern "%1.getChildByTag(%2)"              getChildByTag    :: (NodeBase a) => a -> Int -> IO (Node ())
+foreign import cpattern "%1.setTag(%2)"                     setTag           :: (NodeBase a, NodeBase b) => a -> b -> Int -> IO ()
+foreign import cpattern "%1.getChildByTag(%2)"              getChildByTag    :: (NodeBase a) => a -> Int -> IO Node
 foreign import cpattern "%1.getParent()"                    getParent        :: (NodeBase a) => a -> IO Node
 foreign import cpattern "%1.removeFromParent()"             removeFromParent :: (NodeBase a) => a -> IO ()
 foreign import cpattern "%1.setAnchorPoint(%2)"             jsSetAnchorPoint :: (NodeBase a) => a -> Point -> IO ()
-setAnchorPoint :: Node a -> (Double, Double) -> IO ()
+setAnchorPoint :: (NodeBase a) => a -> (Double, Double) -> IO ()
 setAnchorPoint n p = tupleToPoint p >>= jsSetAnchorPoint n
 foreign import cpattern "%1.setPosition(%2)"                jsSetPosition    :: (NodeBase a) => a -> Point -> IO ()
-setPosition :: Node a -> (Double, Double) -> IO ()
+setPosition :: (NodeBase a) => a -> (Double, Double) -> IO ()
 setPosition n p = tupleToPoint p >>= jsSetPosition n
 foreign import cpattern "%1.getPosition()"                  jsGetPosition    :: (NodeBase a ) => a -> IO Point
-getPosition :: Node a -> IO (Double, Double)
+getPosition :: NodeBase a => a -> IO (Double, Double)
 getPosition n = jsGetPosition n >>= pointToTuple
 foreign import cpattern "%1.setScale(%2,%3)"                setScale         :: (NodeBase a) => a -> Double -> Double -> IO ()
 foreign import cpattern "%1.setVisible(%2)"                 setVisible       :: (NodeBase a) => a -> Bool -> IO ()
 foreign import cpattern "%1.setColor(cc.c4b(%*))"           jsSetColor       :: (NodeBase a) => a -> Word8 -> Word8 -> Word8 -> Word8 -> IO ()
-setColor :: Node a -> Color4b -> IO ()
+setColor :: NodeBase a => a -> Color4b -> IO ()
 setColor n (Color4b r g b a) = jsSetColor n r g b a
 foreign import cpattern "%1.setOpacity(%2)"                 setOpacity       :: (NodeBase a) => a -> Double -> IO ()
 foreign import cpattern "%1.setRotation(%2)"                setRotation      :: (NodeBase a) => a -> Double -> IO ()
 foreign import cpattern "%1.getContentSize()"               jsGetContentSize :: (NodeBase a) => a -> IO Size
-getContentSize :: Node a -> IO (Double,Double)
+getContentSize :: NodeBase a => a -> IO (Double,Double)
 getContentSize n = jsGetContentSize n >>= sizeToTuple
 foreign import cpattern "%1.setContentSize(cc.size(%2,%3))" setContentSize :: (NodeBase a) => a -> Double -> Double -> IO ()
 foreign import cpattern "%1.schedule(function (a) {A(%2, [[1,a],0]);},%3)" scheduleInterval :: (NodeBase a) => a -> IO () -> Double -> IO ()
