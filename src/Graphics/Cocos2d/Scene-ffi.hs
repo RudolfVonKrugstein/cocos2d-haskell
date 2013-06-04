@@ -22,7 +22,7 @@ type Scene = Ptr CScene
 instance NodeBase Scene where
   toNode = sceneToNode
 
-foreign import cpattern "returnSame" sceneToNode :: Scene -> Node
+foreign import ccall "returnSame" sceneToNode :: Scene -> Node
 
 -- Construtor
 foreign import cpattern "new HaskellScene(function(s) {A(%1,[[1,s],0]);})" createScene :: (Scene -> IO ()) -> IO Scene
