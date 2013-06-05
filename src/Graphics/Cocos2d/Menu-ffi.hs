@@ -84,7 +84,7 @@ createMenuWithItems items = do
 
 foreign import cpattern "%1.addChild(%2)" addMenuItem :: (MenuItemBase a) => Menu -> a -> IO ()
 
-foreign import cpattern "cc.MenuItemImage.create(%1,%2,%3,0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItemImage
+foreign import cpattern "cc.MenuItemImage.create(%1,%2,function() {A(%3,[0]);},0)" createMenuItemImage :: String -> String -> IO () -> IO MenuItemImage
 
-foreign import cpattern "cc.MenuItemLabel.create(%1,%2,0)" createMenuItemLabel :: LabelTTF -> IO () -> IO MenuItemLabel
+foreign import cpattern "cc.MenuItemLabel.create(%1,function() {A(%2,[0]);},0)" createMenuItemLabel :: LabelTTF -> IO () -> IO MenuItemLabel
 
