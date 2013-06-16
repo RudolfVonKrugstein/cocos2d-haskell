@@ -9,13 +9,13 @@ import Graphics.Cocos2d
 import Graphics.Cocos2d.Scene
 import ActionManagerTest
 import ActionsTest
+import ClickAndMoveTest
 
 emptyTestCase = TestCase emptyTestCase createScene_ emptyTestCase "Not implemented test case"
   
 
 box2DTestCase = emptyTestCase
 chipmunkTestCase = emptyTestCase
-clickAndMoveTestCase = emptyTestCase
 cocosDenshionTestCase = emptyTestCase
 currentLanguageTestCase = emptyTestCase
 drawPrimitivesTestCase = emptyTestCase
@@ -55,7 +55,7 @@ data Test = Test {
 tests :: [Test]
 tests =
   [
-  Test "ActionManager Test"   (actionManagerTestCase),
+  Test "ActionManager Test"   actionManagerTestCase,
   Test "Action Test"          actionsTestCase,
   Test "Box2D Test"           box2DTestCase,
   Test "Chipmunk Test"        chipmunkTestCase,

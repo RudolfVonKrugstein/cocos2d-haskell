@@ -96,6 +96,9 @@ setOnTouchesCancelled a f =
 
 setOnMouseDragged :: (LayerBase a) => a -> ((Double,Double) -> IO ()) -> IO ()
 setOnMouseDragged a f = c_setOnMouseDragged a (\p -> pointToTuple p >>= f)
+
+setOnMouseUp :: (LayerBase a) => a -> ((Double,Double) -> IO ()) -> IO ()
+setOnMouseUp a f = c_setOnMouseUp a (\p ->pointToTuple p >>= f)
   
 
 foreign import cpattern "%1.onTouchBegan = function(t,_) {return A(%2,[[1,t],0])[2][1];}" c_setOnTouchBegan :: (LayerBase a) => a -> (Ptr CTouch -> IO Bool) -> IO ()
@@ -111,4 +114,8 @@ foreign import cpattern "%1.onTouchesEnded = function(t,_) {A(%2,[[1,t],0]);}"  
 foreign import cpattern "%1.onMouseDragged = function (e) {A(%2,[[1,e.getDelta()],0]);}"       c_setOnMouseDragged :: (LayerBase a) => a -> (Point -> IO ()) -> IO ()
 foreign import cpattern "%1.onScrollWheel = function (e) {A(%2,[[1,e.getWheelDelta()],0]);}"   setOnScrollWheel :: (LayerBase a) => a -> (Double -> IO ()) -> IO ()
 
+foreign import cpattern "%1.onMouseUp = function (e) {A(%2,[[1,e.getLocation()],0]);}" c_setOnMouseUp :: (LayerBase a) => a -> (Point -> IO ()) -> IO ()
+
 foreign import cpattern "%1.setTouchEnabled(%2)" setTouchEnabled :: (LayerBase a) => a -> Bool -> IO ()
+
+foreign import cpattern "%1.setMouseEnabled(%2)" setMouseEnabled :: (LayerBase a) => a -> Bool -> IO ()

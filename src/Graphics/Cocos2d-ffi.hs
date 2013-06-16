@@ -16,6 +16,7 @@ module Graphics.Cocos2d
   , App
   , cocos2dApp
   , quit
+  , testSysCapability
 ) where
 
 import Graphics.Cocos2d.Action
@@ -33,6 +34,9 @@ import Haste.Prim
 
 data CApp
 type App = Ptr CApp
+
+-- sys capapbilites
+foreign import cpattern "%1 in sys.capabilities" testSysCapability :: String -> IO Bool
 
 -- Start cococs2d app
 foreign import cpattern "startCocos2dApp(function (a) {A(%1, [[1,a],0]);})" cocos2dApp :: (App -> IO ()) -> IO ()
