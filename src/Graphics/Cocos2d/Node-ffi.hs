@@ -12,6 +12,8 @@ module Graphics.Cocos2d.Node (
   setAnchorPoint,
   setPosition,
   getPosition,
+  setZOrder,
+  getZOrder,
   setScale,
   setVisible,
   setColor,
@@ -68,6 +70,8 @@ setPosition n p = tupleToPoint p >>= jsSetPosition n
 foreign import cpattern "%1.getPosition()"                  jsGetPosition    :: (NodeBase a ) => a -> IO Point
 getPosition :: NodeBase a => a -> IO (Double, Double)
 getPosition n = jsGetPosition n >>= pointToTuple
+foreign import cpattern "%1.setZOrder(%2)"                  setZOrder        :: (NodeBase a) => a -> Int -> IO ()
+foreign import cpattern "%1.getZOrder()"                    getZOrder        :: (NodeBase a) => a -> IO Int
 foreign import cpattern "%1.setScale(%2,%3)"                setScale         :: (NodeBase a) => a -> Double -> Double -> IO ()
 foreign import cpattern "%1.setVisible(%2)"                 setVisible       :: (NodeBase a) => a -> Bool -> IO ()
 foreign import cpattern "%1.setColor(cc.c4b(%*))"           jsSetColor       :: (NodeBase a) => a -> Word8 -> Word8 -> Word8 -> Word8 -> IO ()

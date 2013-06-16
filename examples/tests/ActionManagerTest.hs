@@ -6,6 +6,7 @@ import Graphics.Cocos2d.Action
 import Resources
 import Haste (alert)
 import TestCase
+import {-# SOURCE #-} MainMenu
 
 actionManagerTestCase = crashTest
 
@@ -38,7 +39,7 @@ removeLayer :: Layer -> IO ()
 removeLayer layer = do
   p <- getParent layer
   removeChild p layer
-  runTestCase (next crashTest) (\_ -> return ())
+  runTestCase (next crashTest)
 
 ------------------------------------------------------------------
 -- Test2
