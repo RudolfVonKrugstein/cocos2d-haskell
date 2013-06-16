@@ -1,9 +1,13 @@
 dist
 cabal-dev
 *.o
+*.o-boot
 *.hi
+*.hi-boot
 *.chi
 *.chs.h
+*.jsmod
+*.swp
 .virthualenv
 .dist-buildwrapper
 .project
