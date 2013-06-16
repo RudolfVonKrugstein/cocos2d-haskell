@@ -23,6 +23,7 @@ parentDir
 
 * place your browser at [127.0.0.1:8000/cocos2d-haskell/examples/tests](127.0.0.1:8000/cocos2d-haskell/examples/tests).
 
+[haste]: https://github.com/valderman/haste-compiler
 [cocos2dx]: http://www.cocos2d-x.org/
 [haste-ffi-parser]: https://github.com/RudolfVonKrugstein/haste-ffi-parser
 [cocos2d-html5]: https://github.com/cocos2d/cocos2d-html5
