@@ -13,9 +13,11 @@ To compile cocos2d-haskell:
 
 * checkout [cocos2d-html5][cocos2d-html5] in the same directory as cocos2d-haskell (so the directory structure should be:
 
+```
 parentDir
 |-> cocos2d-haskell
 |-> cocos2d-html5
+```
 
 * go into cocos2-haskell directory and run 'make'
 
