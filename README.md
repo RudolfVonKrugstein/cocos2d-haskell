@@ -1,3 +1,5 @@
+This project is incomplete and currently abonded
+
 cocos2d-haskell
 ===============
 
